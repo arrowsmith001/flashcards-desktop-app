@@ -11,6 +11,7 @@ environment:
 
 dependencies:
   cloud_firestore: ^4.8.1
+  firedart: ^0.9.4
   flutter:
     sdk: flutter
   flutter_localizations:
@@ -32,4 +33,4 @@ flutter:
 
   assets:
     # Add assets from the images directory to the application.
-    - assets/images/
+    - assets/config/

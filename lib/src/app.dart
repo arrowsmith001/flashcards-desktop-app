@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firedart/firedart.dart';
 import 'package:flashcard_desktop_app/src/classes/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -34,9 +35,28 @@ class MyApp extends StatelessWidget {
 
   Future<void> setup() async {
 
-      
-    await Firebase.initializeApp();
-    // TODO: Figure out Firebase API
+    FirebaseAuth.initialize(config.apiKey, VolatileStore());
+    Firestore.initialize(config.projectId); // Firestore reuses the auth client
+
+  }
+
+  void onPressed() async {
+        var auth = FirebaseAuth.instance;
+    // Monitor sign-in state
+    auth.signInState.listen((state) => logger.d("Signed ${state ? "in" : "out"}"));
+
+    // Sign in with user credentials
+    await auth.signIn(config.email, config.password);
+
+    // Get user object
+    var user = await auth.getUser();
+    logger.d(user);
+
+    // Instantiate a reference to a document - this happens offline
+    var docs = await Firestore.instance.collection('flashcards').get();
+
+    logger.d(docs.first.id);
+    //FirebaseFirestore.instance.collection("flashcards").get().then((value) => logger.d(value.docs.first.id))
   }
   
 
@@ -52,14 +72,11 @@ class MyApp extends StatelessWidget {
       builder: (context, snapshot) => 
       MaterialApp(builder: (ctx, child)
        => TextButton(
-        onPressed: () => FirebaseFirestore.instance.collection("flashcards").get().then((value) => logger.d(value.docs.first.id)), 
+        onPressed: () => onPressed(), 
         child: Text("Click me"))), 
       future: setup());
     
-
-    // TODO: Get Firebase working
-
-
+    // TODO: Setup views + read cards from firestore
 
     return AnimatedBuilder(
       animation: settingsController,
