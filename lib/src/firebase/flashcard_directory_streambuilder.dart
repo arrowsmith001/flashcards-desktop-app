@@ -1,12 +1,20 @@
 
+import 'dart:async';
+import 'dart:math';
+
+import 'package:flutter/services.dart';
 import 'package:firedart/firedart.dart';
 import 'package:flashcard_desktop_app/src/app.dart';
 import 'package:flashcard_desktop_app/src/model/flashcard.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
+import 'package:window_manager/window_manager.dart';
 
 import '../viewmodels/flashcard_directory_viewmodel.dart';
+import '../viewmodels/flashcard_viewmodel.dart';
+
+Logger logger = Logger();
 
 class FlashcardDirectoryStreambuilder extends StatefulWidget {
 
@@ -44,7 +52,7 @@ class FlashcardDirectoryStreambuilderState extends State<FlashcardDirectoryStrea
       initialRoute: '/',
       routes: {
         '/' : (context) => directoryListing(context),
-        '/study' : (context) => studyScreen(context),
+        '/study' : (context) => StudyScreen(flashcards),
       });
      
       }
@@ -53,21 +61,6 @@ class FlashcardDirectoryStreambuilderState extends State<FlashcardDirectoryStrea
           return flashcardDirectoriesSelectedChanged.directoryIds.contains(dir.path);
         }
       
-  Widget studyScreen(BuildContext context) => Scaffold(
-    body: FutureBuilder(
-    future: loadFlashcards(),
-    builder: (context, snap) {
-      if(!snap.hasData || snap.hasError)
-      {
-        return Center(child: CircularProgressIndicator());
-      }
-
-      return ListView(children: flashcards.map((e) => ListTile(
-      title: Text(e.prompt),
-      subtitle: Text(e.response),
-      )).toList());
-    }),
-  );
 
 
   Widget directoryListing(BuildContext context) => Scaffold(
@@ -93,11 +86,19 @@ class FlashcardDirectoryStreambuilderState extends State<FlashcardDirectoryStrea
     );
           }).toList()),
           floatingActionButton: flashcardDirectoriesSelectedChanged.directoryIds.isEmpty ? null 
-            : FloatingActionButton(onPressed:  () {
-              Navigator.pushNamed(context, '/study');
+            : FloatingActionButton(
+             
+              onPressed: studySessionLoading ? null :  () {
+                setState(() {
+                  studySessionLoading = true;
+                });
+                loadFlashcards().then((value) => Navigator.pushNamed(context, '/study'));
+                
             }, child: const Text("Begin Study")),
          );
          
+         bool studySessionLoading = false;
+
           List<Flashcard> flashcards = [];
 
           Future<bool> loadFlashcards() async {
@@ -115,3 +116,111 @@ class FlashcardDirectoryStreambuilderState extends State<FlashcardDirectoryStrea
           }
 
 }
+
+class StudyScreen extends StatefulWidget {
+
+  StudyScreen(this.flashcards, {super.key});
+  final List<Flashcard> flashcards;
+
+  @override
+  State<StudyScreen> createState() => _StudyScreenState();
+}
+
+class _StudyScreenState extends State<StudyScreen> {
+
+  int timeInterval = 10;
+  int secondsRemaining = 10;
+
+  List<Flashcard> get flashcards => widget.flashcards;
+
+  @override
+  void initState() {
+    super.initState();
+
+    ServicesBinding.instance.keyboard.addHandler(onKey);
+    initTimer();  
+  }
+
+  Timer? t;
+
+  void initTimer(){
+    secondsRemaining = timeInterval;
+    resetTimer(); 
+  }
+
+  void resetTimer(){
+    t?.cancel();
+    t = Timer.periodic(const Duration(seconds: 1), onTick);
+  }
+
+  void onTick(Timer t){
+    decrementSeconds();
+  }
+
+  void decrementSeconds(){
+    setState(() {
+      if(secondsRemaining == 0)
+      {
+        onZero();
+      }
+      secondsRemaining--;
+    });
+  }
+
+  void onZero() async {
+    t?.cancel();
+    
+    await Navigator.push(context, MaterialPageRoute(builder: (context){
+        final r = Random();
+        return FlashcardViewModel(flashcards[r.nextInt(flashcards.length)]);
+    }));
+    
+    windowManager.setAlwaysOnTop(false);
+    windowManager.setSize(Size(500,500));
+    windowManager.setAlignment(Alignment.center);
+    windowManager.setMinimizable(true);
+    windowManager.blur();
+
+    initTimer();
+  }
+
+  bool onKey(KeyEvent event) {
+    final key = event.logicalKey.keyLabel;
+    
+      logger.d("key: $key, event: ${event.runtimeType.toString()}");
+      Navigator.pop(context);
+    
+    
+
+    return true; // ?
+  }
+
+  @override
+  void dispose() {
+    
+    ServicesBinding.instance.keyboard.removeHandler(onKey);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(child: Column(children: 
+      [
+        Text(secondsRemaining.toString()),
+
+        Row(children: 
+        [
+            IconButton(onPressed: (){
+              decrementSeconds();
+              resetTimer();
+            }, icon: const Icon(Icons.add))
+        ],)
+
+      ],)),
+    );
+  }
+}
+
+
+
