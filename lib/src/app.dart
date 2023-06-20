@@ -1,44 +1,65 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firedart/firedart.dart';
 import 'package:flashcard_desktop_app/src/classes/app_config.dart';
+import 'package:flashcard_desktop_app/src/firebase/flashcard_directory_streambuilder.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:logger/logger.dart';
 import 'package:window_manager/window_manager.dart';
 
-import 'sample_feature/sample_item_details_view.dart';
-import 'sample_feature/sample_item_list_view.dart';
-import 'settings/settings_controller.dart';
-import 'settings/settings_view.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'model/flashcard.dart';
 
 
-
-
-
-
-/// The Widget that configures your application.
 class MyApp extends StatelessWidget {
 
-  MyApp(this.config, {
-    super.key,
-    required this.settingsController,
-  })
-  {
-    windowManager.setAlwaysOnTop(true);
-  }
+  
+  MyApp(this.config);
 
   final AppConfig config;
 
-  Future<void> setup() async {
+  @override
+  Widget build(BuildContext context) {
+    return MainScreen(config);
+  }
+
+}
+
+
+class FlashcardDirectoriesSelectedChanged extends Notification 
+{
+  List<String> directoryIds = [];
+}
+
+class MainScreen extends StatefulWidget {
+  
+  final AppConfig config;
+  MainScreen(this.config);
+
+  @override
+  State<StatefulWidget> createState() {
+    return MainScreenState();
+  }
+
+}
+
+/// The Widget that configures your application.
+class MainScreenState extends State<MainScreen> {
+
+
+  AppConfig get config => widget.config;
+
+  Future<bool> setup() async {
 
     FirebaseAuth.initialize(config.apiKey, VolatileStore());
     Firestore.initialize(config.projectId); // Firestore reuses the auth client
 
+    var auth = FirebaseAuth.instance;
+    await auth.signIn(config.email, config.password);
+
+    return true;
   }
+
+  Stream<List<Document>> getStream() => Firestore.instance.collection("flashcardDirectories").stream;
 
   void onPressed() async {
         var auth = FirebaseAuth.instance;
@@ -58,77 +79,145 @@ class MyApp extends StatelessWidget {
     logger.d(docs.first.id);
     //FirebaseFirestore.instance.collection("flashcards").get().then((value) => logger.d(value.docs.first.id))
   }
+
+  bool window = false;
+  void testWindow() async {
+    window = !window;
+    // TODO: Cheeky animation?
+
+    windowManager.setAlwaysOnTop(window);
+    if(window)
+    {
+      await windowManager.setSize(Size(300,150));
+      await windowManager.setAlignment(Alignment.bottomRight);
+      await windowManager.setMinimizable(false);
+    }
+    else
+    {
+      await windowManager.setSize(Size(500,500));
+      await windowManager.setAlignment(Alignment.center);
+      await windowManager.setMinimizable(true);
+      await windowManager.blur();
+    }
+  }
   
 
-  final SettingsController settingsController;
   final Logger logger = Logger();
+
+  final FlashcardDirectoriesSelectedChanged flashcardDirectoriesSelectedChanged = FlashcardDirectoriesSelectedChanged();
 
   @override
   Widget build(BuildContext context) {
 
 
-
     return FutureBuilder(
-      builder: (context, snapshot) => 
-      MaterialApp(builder: (ctx, child)
-       => TextButton(
-        onPressed: () => onPressed(), 
-        child: Text("Click me"))), 
-      future: setup());
-    
-    // TODO: Setup views + read cards from firestore
+          future: setup(),
+          builder: (context, snapshot) {
+            if(!snapshot.hasData || snapshot.hasError)
+          {
+            return MaterialApp(builder: (context, child) => 
+            Scaffold(body:
+             Center(child: Row(
+              mainAxisAlignment: MainAxisAlignment.center, children: [Text("Logging in"), CircularProgressIndicator()],)),),);
+          }
 
-    return AnimatedBuilder(
-      animation: settingsController,
-      builder: (BuildContext context, Widget? child) {
-        return MaterialApp(
-          restorationScopeId: 'app',
+        return StreamBuilder(
+          stream: getStream().map<List<FlashcardDirectory>>((docs) 
+      {
+          final directoriesListed = docs.map((doc) {
+            return FlashcardDirectory.fromFirestoreDocument(doc);
+          }).toList();
 
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: const [
-            Locale('en', ''), // English, no country code
-          ],
+          directoriesListed.sort((d1, d2) => d1.path.toLowerCase().compareTo(d2.path.toLowerCase()));
 
-          // Use AppLocalizations to configure the correct application title
-          // depending on the user's locale.
-          //
-          // The appTitle is defined in .arb files found in the localization
-          // directory.
-          onGenerateTitle: (BuildContext context) =>
-              AppLocalizations.of(context)!.appTitle,
+          return directoriesListed;
 
-          // Define a light and dark color theme. Then, read the user's
-          // preferred ThemeMode (light, dark, or system default) from the
-          // SettingsController to display the correct theme.
-          theme: ThemeData(),
-          darkTheme: ThemeData.dark(),
-          themeMode: settingsController.themeMode,
+          // TODO: Convert to tree folder structure
+          // final Map<String, List<FlashcardDirectory>> directoriesMap = {};
+          // for(FlashcardDirectory dir in directoriesListed)
+          // {
+          //   List<String> pathSplit = dir.path.split(("/"));
+          //   for(int i = pathSplit.length; i > 0; i--)
+          //   {
+          //     final currentPath = 
+          //     if(!directoriesMap.keys.contains(dir.path))
+          //     {
+          //       directoriesMap[];
+          //     }
+          //   }
 
-          // Define a function to handle named routes in order to support
-          // Flutter web url navigation and deep linking.
-          onGenerateRoute: (RouteSettings routeSettings) {
-            return MaterialPageRoute<void>(
-              settings: routeSettings,
-              builder: (BuildContext context) {
-                switch (routeSettings.name) {
-                  case SettingsView.routeName:
-                    return SettingsView(controller: settingsController);
-                  case SampleItemDetailsView.routeName:
-                    return const SampleItemDetailsView();
-                  case SampleItemListView.routeName:
-                  default:
-                    return const SampleItemListView();
-                }
-              },
-            );
-          },
+          // }
+      }),
+          builder: (context, snapshot) {
+            
+            if(!snapshot.hasData || snapshot.hasError){
+            return MaterialApp(builder: (context, child) => 
+            Scaffold(body:
+             Center(child: Row(
+              mainAxisAlignment: MainAxisAlignment.center, children: [Text("Loading data"), CircularProgressIndicator()],)),),);
+          }
+
+          final List<FlashcardDirectory> dirs = snapshot.data!;
+          
+         
+            return FlashcardDirectoryStreambuilder(dirs);
+          }
         );
-      },
+      }
     );
+    
+
+    // return AnimatedBuilder(
+    //   animation: settingsController,
+    //   builder: (BuildContext context, Widget? child) {
+    //     return MaterialApp(
+    //       restorationScopeId: 'app',
+
+    //       localizationsDelegates: const [
+    //         AppLocalizations.delegate,
+    //         GlobalMaterialLocalizations.delegate,
+    //         GlobalWidgetsLocalizations.delegate,
+    //         GlobalCupertinoLocalizations.delegate,
+    //       ],
+    //       supportedLocales: const [
+    //         Locale('en', ''), // English, no country code
+    //       ],
+
+    //       // Use AppLocalizations to configure the correct application title
+    //       // depending on the user's locale.
+    //       //
+    //       // The appTitle is defined in .arb files found in the localization
+    //       // directory.
+    //       onGenerateTitle: (BuildContext context) =>
+    //           AppLocalizations.of(context)!.appTitle,
+
+    //       // Define a light and dark color theme. Then, read the user's
+    //       // preferred ThemeMode (light, dark, or system default) from the
+    //       // SettingsController to display the correct theme.
+    //       theme: ThemeData(),
+    //       darkTheme: ThemeData.dark(),
+    //       themeMode: settingsController.themeMode,
+
+    //       // Define a function to handle named routes in order to support
+    //       // Flutter web url navigation and deep linking.
+    //       onGenerateRoute: (RouteSettings routeSettings) {
+    //         return MaterialPageRoute<void>(
+    //           settings: routeSettings,
+    //           builder: (BuildContext context) {
+    //             switch (routeSettings.name) {
+    //               case SettingsView.routeName:
+    //                 return SettingsView(controller: settingsController);
+    //               case SampleItemDetailsView.routeName:
+    //                 return const SampleItemDetailsView();
+    //               case SampleItemListView.routeName:
+    //               default:
+    //                 return const SampleItemListView();
+    //             }
+    //           },
+    //         );
+    //       },
+    //     );
+    //   },
+    // );
   }
 }

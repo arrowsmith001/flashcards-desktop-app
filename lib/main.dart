@@ -7,6 +7,8 @@ import 'src/settings/settings_controller.dart';
 import 'src/settings/settings_service.dart';
 import 'package:window_manager/window_manager.dart';
 
+// TODO: Conduct study session + create periodic flashcard popups
+
 void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,5 +35,5 @@ void main() async {
     await windowManager.focus();
   });
 
-  runApp(MyApp(config, settingsController: settingsController));
+  runApp(MainScreen(config));
 }
