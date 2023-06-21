@@ -1,5 +1,7 @@
 
 import 'package:flashcard_desktop_app/src/classes/app_config.dart';
+import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
+import 'package:flashcard_desktop_app/src/window/app_window_manager.dart';
 import 'package:flutter/material.dart';
 
 import 'src/app.dart';
@@ -7,7 +9,9 @@ import 'src/settings/settings_controller.dart';
 import 'src/settings/settings_service.dart';
 import 'package:window_manager/window_manager.dart';
 
-// TODO: Conduct study session + create periodic flashcard popups
+// TODO: Make Flashcard deck folder structure
+// TODO: Make database service
+
 
 void main() async {
 
@@ -19,21 +23,20 @@ void main() async {
   final settingsController = SettingsController(SettingsService());
   await settingsController.loadSettings();
 
-  var config = await AppConfig.forEnvironment('dev');
-
+  var success = await AppConfigManager.configureForEnvironment('dev');
+  if(!success) AppLogger.log('Some variables werent configured');
 
   WindowOptions windowOptions = const WindowOptions(
-    size: Size(800, 600),
-    center: true,
     backgroundColor: Colors.transparent,
     skipTaskbar: false,
     titleBarStyle: TitleBarStyle.hidden,
   );
 
   windowManager.waitUntilReadyToShow(windowOptions, () async {
+    await AppWindowManager.setDefaultSizeAndPosition();               
     await windowManager.show();
     await windowManager.focus();
   });
 
-  runApp(MainScreen(config));
+  runApp(MyApp());
 }

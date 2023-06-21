@@ -2,21 +2,33 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 
-class AppConfig {
+class AppConfigManager {
+  
+  static final AppConfigManager instance = AppConfigManager._internal();
 
-  AppConfig(this.apiKey, this.projectId, this.email, this.password);
+  factory AppConfigManager() {
+    return instance;
+  }
 
-  final String apiKey;
-  final String projectId;
-  final String email;
-  final String password;
+  AppConfigManager._internal();
 
-  static Future<AppConfig> forEnvironment(String env) async {
+  String? apiKey;
+  String? projectId;
+  String? email;
+  String? password;
+
+  static Future<bool> configureForEnvironment(String env) async {
 
     var data = await rootBundle.loadString("assets/config/$env.json");
     var json = jsonDecode(data);
 
-    return AppConfig(json['apiKey'], json['projectId'], json['email'], json['password']);
+    instance.apiKey = json['apiKey'];
+    instance.projectId = json['projectId'];
+    instance.email = json['email'];
+    instance.password = json['password'];
+
+    return instance.apiKey != null && instance.projectId != null && instance.email != null && instance.password != null;
   }
+
 
 }

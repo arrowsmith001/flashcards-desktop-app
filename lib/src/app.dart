@@ -1,136 +1,81 @@
 import 'dart:async';
 
-import 'package:firedart/firedart.dart';
 import 'package:flashcard_desktop_app/src/classes/app_config.dart';
-import 'package:flashcard_desktop_app/src/firebase/flashcard_directory_streambuilder.dart';
+import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
+import 'package:flashcard_desktop_app/src/views/login_view.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:logger/logger.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'model/flashcard.dart';
+import 'navigation/navigation_manager.dart';
+import 'views/flashcard_view.dart';
 
 
 class MyApp extends StatelessWidget {
 
-  
-  MyApp(this.config);
+  MyApp(){
+  }
 
-  final AppConfig config;
+  final windowStyleNavigatorKey = GlobalKey<NavigatorState>();
+
 
   @override
   Widget build(BuildContext context) {
-    return MainScreen(config);
-  }
 
-}
+    AppLogger.log(MediaQuery.of(context).size);
 
-
-class FlashcardDirectoriesSelectedChanged extends Notification 
-{
-  List<String> directoryIds = [];
-}
-
-class MainScreen extends StatefulWidget {
-  
-  final AppConfig config;
-  MainScreen(this.config){
-    windowManager.setAlwaysOnTop(false);
-  }
-
-  @override
-  State<StatefulWidget> createState() {
-    return MainScreenState();
-  }
-
-}
-
-/// The Widget that configures your application.
-class MainScreenState extends State<MainScreen> {
-
-
-  AppConfig get config => widget.config;
-
-  Future<bool> setup() async {
-
-    FirebaseAuth.initialize(config.apiKey, VolatileStore());
-    Firestore.initialize(config.projectId); // Firestore reuses the auth client
-
-    var auth = FirebaseAuth.instance;
-    await auth.signIn(config.email, config.password);
-
-    return true;
-  }
-
-  Future<List<FlashcardDirectory>> fetchFlashcardDirectories() async {
-    final docs = await Firestore.instance.collection("flashcardDirectories").limit(1).get();
-    
-    final directoriesListed = docs.map(FlashcardDirectory.fromFirestoreDocument).toList();
-    directoriesListed.sort((d1, d2) => d1.path.toLowerCase().compareTo(d2.path.toLowerCase()));
-    return directoriesListed;
-
-    // TODO: Convert to tree folder structure
-/*     final Map<String, List<FlashcardDirectory>> directoriesMap = {};
-    for(FlashcardDirectory dir in directoriesListed)
-    {
-      List<String> pathSplit = dir.path.split(("/"));
-      for(int i = pathSplit.length; i > 0; i--)
-      {
-        final currentPath = 
-        if(!directoriesMap.keys.contains(dir.path))
+  return MaterialApp(
+                  initialRoute: '/',
+                  onGenerateRoute: NavigationManager.generateRoute,
+                  color: Color.fromARGB(0, 0, 0, 0));
+/*     return Navigator(
+      initialRoute: '///',
+      onGenerateRoute: (settings) {
+        switch(settings.name)
         {
-          directoriesMap[];
+          case '/': 
+          return PageRouteBuilder(
+            pageBuilder: (context, anim, anim2)
+          {
+            return MaterialApp(
+                builder: (context, child) {
+                  return Scaffold(
+                    backgroundColor: Color.fromARGB(0, 255, 255, 255),
+                    appBar: AppBar(title: Text("hi")),
+                    body: child,
+                  );
+                },
+                initialRoute: '/',
+                onGenerateRoute: NavigationManager.generateRoute,
+                color: Colors.white);
+          });
+        case '/notif':
+        return PageRouteBuilder(pageBuilder: (context, anim, anim2)
+          {
+            return MaterialApp(
+          builder: (context, child) {
+            return Scaffold(
+              appBar: AppBar(title: Text("Flashcard App")),
+              body: child,
+            );
+          },
+          initialRoute: '/',
+          onGenerateRoute: NavigationManager.generateRoute,
+          color: Colors.white);
+          });
+      
         }
       }
-
-    } */
-      
-  } 
-
-
-
-  bool window = false;
-  
-
-  final Logger logger = Logger();
-
-  final FlashcardDirectoriesSelectedChanged flashcardDirectoriesSelectedChanged = FlashcardDirectoriesSelectedChanged();
-
-  @override
-  Widget build(BuildContext context) {
-
-
-    return FutureBuilder(
-          future: setup(),
-          builder: (context, snapshot) {
-            if(!snapshot.hasData || snapshot.hasError)
-          {
-            return MaterialApp(builder: (context, child) => 
-            Scaffold(body:
-             Center(child: Row(
-              mainAxisAlignment: MainAxisAlignment.center, children: [Text("Logging in"), CircularProgressIndicator()],)),),);
-          }
-
-        return FutureBuilder(
-          future: fetchFlashcardDirectories(),
-          builder: (context, snapshot) {
-            
-            if(!snapshot.hasData || snapshot.hasError){
-            return MaterialApp(builder: (context, child) => 
-            Scaffold(body:
-             Center(child: Row(
-              mainAxisAlignment: MainAxisAlignment.center, children: [Text("Loading data"), CircularProgressIndicator()],)),),);
-          }
-
-          final List<FlashcardDirectory> dirs = snapshot.data!;
-          
-         
-            return FlashcardDirectoryStreambuilder(dirs);
-          }
-        );
-      }
-    );
+    ); */
   }
+
 }
+
+
+
+
 
 /*     return AnimatedBuilder(
       animation: settingsController,

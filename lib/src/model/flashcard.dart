@@ -1,13 +1,26 @@
 
 import 'package:firedart/firestore/models.dart';
 
-class Flashcard 
+abstract class Serializable {
+  Map<String, dynamic> serialized();
+}
+
+class Flashcard implements Serializable
 {
   Flashcard(this.id, this.prompt, this.response);
 
   final String id;
   final String prompt;
   final String response;
+
+  @override
+  Map<String, dynamic> serialized() {
+    return {'id' : id, 'prompt' : prompt, 'response' : response};
+  }
+
+  static Flashcard deserialized(Map<String, dynamic> map) {
+    return Flashcard(map['id']!, map['prompt']!, map['response']!);
+  }
 }
 
 class FlashcardDirectory {
@@ -23,4 +36,5 @@ class FlashcardDirectory {
   static FlashcardDirectory fromFirestoreDocument(Document doc) {
     return FlashcardDirectory(doc.id, doc['path'], doc['depth']);
   }
+
 }
