@@ -3,26 +3,21 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
+import 'package:flashcard_desktop_app/src/navigation/navigation_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firedart/firedart.dart';
-import 'package:flashcard_desktop_app/src/app.dart';
 import 'package:flashcard_desktop_app/src/model/flashcard.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' as material;
-import 'package:flutter/widgets.dart';
 import 'package:logger/logger.dart';
-import 'package:window_manager/window_manager.dart';
 
-import '../viewmodels/flashcard_directory_viewmodel.dart';
-import '../viewmodels/flashcard_viewmodel.dart';
 import '../window/app_window_manager.dart';
 
 Logger logger = Logger();
 
 class StudyView extends StatefulWidget {
 
-  StudyView(this.flashcardDirectoryIds, {super.key});
+  const StudyView(this.flashcardDirectoryIds, {super.key});
   final List<String> flashcardDirectoryIds;
 
   @override
@@ -78,7 +73,7 @@ class _StudyViewState extends State<StudyView> {
     final r = Random();
     final flashcard = flashcardsToDo[r.nextInt(flashcardsToDo.length)];
 
-    await Navigator.pushNamed(context, '/flashcard', arguments: {'flashcard' : flashcard.serialized()});
+    await Navigator.pushNamed(context, NavigationManager.flashcardRoute, arguments: {'flashcard' : flashcard.serialized()});
 
     await AppWindowManager.setDefaultSizeAndPosition();
     await AppWindowManager.makeVisible();
@@ -143,7 +138,7 @@ class _StudyViewState extends State<StudyView> {
         builder: ((context, snapshot) {
     
           if(!snapshot.hasData){ return const Center(child: material.CircularProgressIndicator()); }
-          if(snapshot.hasError){ return Center(child: Text("There was an error: ${snapshot.error.toString()}"));};
+          if(snapshot.hasError){ return Center(child: Text("There was an error: ${snapshot.error.toString()}"));}
     
           return Center(child: Column(
             mainAxisSize: MainAxisSize.max, mainAxisAlignment: MainAxisAlignment.center,
@@ -152,7 +147,7 @@ class _StudyViewState extends State<StudyView> {
                       Expanded(
                         child: Center(
                           child: Text(secondsRemaining.toString(), 
-                            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
+                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
                         ),
                       ),
     

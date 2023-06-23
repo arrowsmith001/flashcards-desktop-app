@@ -1,27 +1,31 @@
- import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
 import 'package:flashcard_desktop_app/src/model/flashcard.dart';
 import 'package:flashcard_desktop_app/src/views/flashcard_directories_listing_view.dart';
 import 'package:flashcard_desktop_app/src/views/flashcard_view.dart';
+import 'package:flashcard_desktop_app/src/views/main_view.dart';
 import 'package:flashcard_desktop_app/src/views/study_view.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 import '../views/login_view.dart';
 
 
 class NavigationManager {
 
+  static const String entryRoute = '/';
+  static const String mainRoute = '/main';
+  static const String studyRoute = '/study';
+  static const String flashcardRoute = '/flashcard';
+
   static Route generateRoute(RouteSettings settings){
     final args = (settings.arguments as Map?);
     
     switch(settings.name){
-      case "/":
+      case entryRoute:
         return  PageRouteBuilder(
-          transitionDuration: Duration(milliseconds: 500),
+          transitionDuration: const Duration(milliseconds: 500),
             pageBuilder: (BuildContext context,Animation<double> animation,
                 Animation<double> secondaryAnimation){
-              return LoginView();
+              return const LoginView();
             },
             transitionsBuilder: (_, Animation<double> animation, Animation<double> second, Widget child) {
               
@@ -37,8 +41,8 @@ class NavigationManager {
                     child: Transform.translate(
                       offset: Offset(500*(1-curvedIn.value),0),
                       child: Transform.translate(
-                        child: child,
-                      offset: Offset(500*curvedOut.value,0)),
+                        offset: Offset(500*curvedOut.value,0),
+                        child: child),
                     ),
                   )),
 
@@ -47,13 +51,12 @@ class NavigationManager {
 
             }
         );
-        break;
-      case "/flashcardDirectories":
+      case mainRoute:
         return  PageRouteBuilder(
-          transitionDuration: Duration(milliseconds: 500),
+          transitionDuration: const Duration(milliseconds: 500),
             pageBuilder: (BuildContext context,Animation<double> animation,
                 Animation<double> secondaryAnimation){
-              return FlashcardDirectoriesListingView();
+              return const MainView();
             },
             transitionsBuilder: (_, Animation<double> animation, Animation<double> second, Widget child) {
 
@@ -69,36 +72,27 @@ class NavigationManager {
                     child: Transform.translate(
                       offset: Offset(500*(1-curvedIn.value),0),
                       child: Transform.translate(
-                        child: child,
-                      offset: Offset(500*curvedOut.value,0)),
+                        offset: Offset(500*curvedOut.value,0),
+                        child: child),
                     ),
                   )),
 
                   );
 
-              return Scaffold(
-                body: FadeTransition(
-                opacity: animation,
-                child: FadeTransition(
-                  opacity: Tween<double>(begin: 1.0, end: 0.0).animate(second),
-                  child: child,
-                ),
-              ),
-              );
             }
         );
-      case "/study":
+      case studyRoute:
         return  PageRouteBuilder(
-          transitionDuration: Duration(microseconds: 0),
+          transitionDuration: const Duration(microseconds: 0),
             pageBuilder: (BuildContext context,Animation<double> animation,
                 Animation<double> secondaryAnimation){
               return StudyView(args!['flashcardDirectoryIds']);
             }
             
         );
-      case "/flashcard":
+      case flashcardRoute:
         return  PageRouteBuilder(
-          transitionDuration: Duration(microseconds: 0),
+          transitionDuration: const Duration(microseconds: 0),
             pageBuilder: (BuildContext context,Animation<double> animation,
                 Animation<double> secondaryAnimation)
                 {
@@ -118,7 +112,7 @@ class NavigationManager {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 const Text("First Page",textDirection: TextDirection.ltr,),
-                const Padding(padding: const EdgeInsets.all(10.0)),
+                const Padding(padding: EdgeInsets.all(10.0)),
                 GestureDetector(
                   onTap: () => Navigator.of(context).pop(),
                   child: Container(

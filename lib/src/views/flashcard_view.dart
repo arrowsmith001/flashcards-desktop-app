@@ -34,7 +34,7 @@ class _FlashcardViewState extends State<FlashcardView>
     _controller = AnimationController(
       vsync: this, 
       value: 1, 
-      duration: Duration(milliseconds: 500));
+      duration: const Duration(milliseconds: 500));
     _controller.addListener(() {setState(() {
     });});
 
@@ -62,7 +62,7 @@ class _FlashcardViewState extends State<FlashcardView>
           child: ClipRRect(
             borderRadius: BorderRadius.circular(8.0),
             child: Scaffold(
-              body: transitioningBack ? Center(child: CircularProgressIndicator()) 
+              body: transitioningBack ? const Center(child: CircularProgressIndicator()) 
               : InkWell(
                 hoverColor: Colors.grey.shade300,
                 onTap: () => dismissFlashcard(),
@@ -71,10 +71,10 @@ class _FlashcardViewState extends State<FlashcardView>
                   padding: const EdgeInsets.all(16.0),
                   child: Row(children: 
                   [
-                    Expanded(child: Text(flashcard.prompt, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
-                    Container(decoration: BoxDecoration(
+                    Expanded(child: Text(flashcard.prompt, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+                    Container(decoration: const BoxDecoration(
                               shape: BoxShape.rectangle),
-                          child: Icon(Icons.arrow_forward, color: Colors.black),
+                          child: const Icon(Icons.arrow_forward, color: Colors.black),
                         )
                   ])
               ),

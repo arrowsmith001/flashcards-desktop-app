@@ -33,8 +33,11 @@ class FlashcardDirectory {
   final List<FlashcardDirectory> childDirectories = [];
   final List<Flashcard> childFlashcards = [];
 
+  String get name => path.split('/').last;
+
   static FlashcardDirectory fromFirestoreDocument(Document doc) {
     return FlashcardDirectory(doc.id, doc['path'], doc['depth']);
   }
 
 }
+

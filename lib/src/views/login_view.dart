@@ -1,7 +1,6 @@
 import 'package:firedart/firedart.dart';
 import 'package:flashcard_desktop_app/src/classes/app_config.dart';
-import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flashcard_desktop_app/src/navigation/navigation_manager.dart';
 import 'package:flutter/material.dart';
 
 class LoginView extends StatefulWidget {
@@ -44,7 +43,7 @@ catch(e){
         {
           if(!snapshot.hasData)
           {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
     
           if(snapshot.hasError)
@@ -52,8 +51,8 @@ catch(e){
             return Center(child: Text("There was a Login error: ${snapshot.error.toString()}"));
           }
     
-          return TextButton(onPressed: () => Navigator.pushNamed(context, '/flashcardDirectories'), 
-          child: Center(child: Text("Login successful")));
+          return TextButton(onPressed: () => Navigator.pushNamed(context, NavigationManager.mainRoute), 
+          child: const Center(child: Text("Login successful")));
         }),
     );
   }
