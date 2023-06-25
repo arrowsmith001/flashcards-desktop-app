@@ -1,5 +1,8 @@
 
 
+import 'dart:collection';
+import 'dart:convert';
+
 import 'package:firedart/firedart.dart';
 import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
 import 'package:flashcard_desktop_app/src/navigation/navigation_manager.dart';
@@ -7,6 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_treeview/flutter_treeview.dart';
 
 import '../model/flashcard.dart';
+
+//TODO: TREE STRUCTURE FFS
 
 class FlashcardDirectoriesListingView extends StatefulWidget {
   const FlashcardDirectoriesListingView({super.key});
@@ -17,7 +22,7 @@ class FlashcardDirectoriesListingView extends StatefulWidget {
 
 class _FlashcardDirectoriesListingViewState extends State<FlashcardDirectoriesListingView> {
 
-List<String> directoryIds = [];
+List<String> selectedDirectoryIds = [];
 
   @override
   Widget build(BuildContext context) {
@@ -38,8 +43,30 @@ List<String> directoryIds = [];
           return Stack(children: [
 
             TreeView(
-              controller: TreeViewController(children:[data], selectedKey: ''),),
-    
+              
+              controller: TreeViewController(
+                children:data.children, selectedKey: ''),
+                nodeBuilder: (context, node)
+                {
+                  final FlashcardDirectory? data = node.data;
+                  if(data != null)
+                  {
+                    return ListTile(title: Text(node.label), trailing: Checkbox(
+                      value: selectedDirectoryIds.contains(data.id),
+                      onChanged: (value) {
+                        setState(() {
+                          if(value ?? false) selectedDirectoryIds.add(data.id);
+                          else selectedDirectoryIds.remove(data.id);
+                        });
+                    }));
+                  }
+                  return ListTile(title: Text(node.label));
+
+                },
+                
+                ),
+
+                
 
 /*             ListView(children: data.map((dir) {
               
@@ -58,24 +85,13 @@ List<String> directoryIds = [];
           );
             }).toList()), */
     
-            directoryIds.isEmpty ? Container() 
+            selectedDirectoryIds.isEmpty ? Container() 
             : Align(
               alignment: Alignment.bottomCenter,
-              child: TextButton(child: const Text('Begin Study'),
+              child: TextButton(child: Text('Begin Study (${selectedDirectoryIds.length})'),
               onPressed: () 
               {
-                Navigator.pushNamed(context, NavigationManager.studyRoute, arguments : {'flashcardDirectoryIds' : directoryIds});
-              }),
-          
-            ),
-
-
-            Align(
-              alignment: Alignment.topCenter,
-              child: TextButton(child: const Text('<-->'),
-              onPressed: () 
-              {
-                Navigator.pop(context);
+                Navigator.pushNamed(context, NavigationManager.studyRoute, arguments : {'flashcardDirectoryIds' : selectedDirectoryIds});
               }),
           
             )
@@ -89,15 +105,8 @@ List<String> directoryIds = [];
 
   Future<Node<FlashcardDirectory?>> fetchFlashcardDirectories() async {
 
-    // return Node(key: '', label: '0', children: [
 
-    //     Node(key: '1', label: '1', data: FlashcardDirectory('id', '1', 0)),
-    //     Node(key: '2', label: '2', data: FlashcardDirectory('id', '2', 0)),
-    //     Node(key: '3', label: '3', data: FlashcardDirectory('id', '3', 0)),
-    //     Node(key: '4', label: '4', data: FlashcardDirectory('id', '4', 0)),
-    // ]);
-
-    final docs = await Firestore.instance.collection("flashcardDirectories").limit(3).get();
+    final docs = await Firestore.instance.collection("flashcardDirectories").limit(10).get();
     
     // Now we have a list of unconnected directories
     final directoriesListed = docs.map(FlashcardDirectory.fromFirestoreDocument).toList();
@@ -105,126 +114,66 @@ List<String> directoryIds = [];
     // Organize into folder structure
     directoriesListed.sort((d1, d2) => d1.path.toLowerCase().compareTo(d2.path.toLowerCase()));
 
-    SimpleNode simpleNode = getSimpleNodeTreeFromDirectories(directoriesListed);
+    return buildTree(directoriesListed, (dir) => dir.path);
   
-    try{
 
-    //Map<String, Node<FlashcardDirectory?>> nodes = {};
-    List<Node<FlashcardDirectory?>> nodes = [];
-    List<String> topLevels = [];
+}
 
-    Map<String, dynamic> structure = {};
-    for(var dir in directoriesListed)
-    {
-      final dirNames = dir.path.split('/');
-      structure = addRecursively(structure, dirNames);
+Node<T?> buildTree<T>(List<T> dataList, String Function(T) getPath) {
 
-/*       AppLogger.log("3");
-      nodes.add(Node<FlashcardDirectory?>(key: dir.path, label: dir.name, data: dir));
-        
-      AppLogger.log("4");
-      String topLevel = dir.path.split('/').reduce((v, e) {
-        final subPath = "$v/$e";
-        if(!nodes.any((element) => element.key == subPath))
-        { 
-          nodes.add(Node<FlashcardDirectory?>(key: subPath, label: subPath.split('/').last, data: null));
-          AppLogger.log("subPath: " + subPath.toString());
-        }
-    
-        return subPath;
-      });
+  AddableTreeNode<T> root = AddableTreeNode<T>(key: '', label: '');
 
-      nodes.add(Node<FlashcardDirectory?>(key: topLevel, label: topLevel, data: null));
-      topLevels.add(topLevel); */
+  for (T data in dataList) {
+
+    final String path = getPath(data);
+    List<String> parts = path.split('/');
+    AddableTreeNode<T> currentNode = root;
+
+    String builtUpName = "";
+
+    for (String part in parts) {
+
+      AddableTreeNode<T> nextNode;
+      builtUpName = "$builtUpName/$part";
+
+      if(currentNode.children.any((node) => node.key == builtUpName))
+      {
+        nextNode = currentNode.children
+            .firstWhere((node) => node.key == builtUpName);
+      }
+      else
+      {
+        nextNode = AddableTreeNode(key: builtUpName, label: part);
+        currentNode.children.add(nextNode);
+      }
+
+        currentNode = nextNode;
+      }
+
+      currentNode.data = data;
     }
 
-    Map<String, dynamic> nodeTree = {};
-    for(var dir in directoriesListed)
-    {
-      final splitPath = dir.path.split('/');
-     // addNodesRecursively(nodeTree, dir, splitPath);
-    }
-
-
-    AppLogger.log("pathsToNodes: " + nodes.toString());
-
-
-    final rootNode = Node<FlashcardDirectory?>(key: '', label: '', data: null);
-    rootNode.children.addAll(nodes.where((element) => topLevels.contains(element.key)));
-    AppLogger.log("node: " + rootNode.toString());
-
-    return rootNode;
-    }on Exception catch(e)
-    {
-        AppLogger.log(e.toString());
-    }
-
-    return Node(key: '', label: '', data: new FlashcardDirectory('id', 'path', 0));
-
-
+    return convertToImmutableTree<T>(root);
   }
+
   
-  SimpleNode getSimpleNodeTreeFromDirectories(List<FlashcardDirectory> directoriesListed) {
-    SimpleNode root = SimpleNode<FlashcardDirectory?>('', null);
-    for(var dir in directoriesListed)
-    {
-      final splitPath = dir.path.split('/');
-
-      addToTree(root, splitPath);
-
-    }
-  }
-  
-  // TODO: Figure out how to make tree structure 
-
-  SimpleNode<FlashcardDirectory?> addToTree(SimpleNode current, List<String> splitPath, FlashcardDirectory directory) {
-    
-    final currentName = splitPath.first;
-    if(splitPath.length == 1) return SimpleNode<FlashcardDirectory?>(currentName, directory);
-
-    late SimpleNode child;
-    try
-    {
-      child = current.children.singleWhere((element) => element.name == currentName);
-      child.children.add(SimpleNode<FlashcardDirectory?>(currentName, null), splitPath.sublist(1), directory);
-    }catch (e){}
-
-    current.children.add(addToTree(SimpleNode<FlashcardDirectory?>(currentName, null), splitPath.sublist(1), directory));
-    
-  }
-  
-/*   Node addNodesRecursively(Map<String, dynamic> struct, Node currentNode, FlashcardDirectory dir, int depth) {
-    
-    final splitPath = dir.path.split('/');
-    
-    if(splitPath.length < depth)
-    {
-      return Node(key: dir.path, label: dir.name, data: dir);
-    }
-
-    final nextMap = struct[splitPath[depth]]; 
-
-
-    final current = path.first;
-    late Node node;
-    if(!struct.containsKey(current))
-    {
-      node = Node();
-      node = struct[currentNode];
-    }
-    else 
-
-  } */
-
+Node<T> convertToImmutableTree<T>(AddableTreeNode<T> addableNode) {
+  T? data = addableNode.data;
+  List<Node<T>> children = addableNode.children
+      .map((child) => convertToImmutableTree(child))
+      .toList();
+  return Node(children: children, data: data, key: addableNode.key, label: addableNode.label);
+}
 
 }
 
 
-class SimpleNode<T> {
-  final T data;
-  final String name;
+class AddableTreeNode<T> {
 
-  List<SimpleNode> children = [];
+  final String key;
+  final String label;
+  T? data;
+  final List<AddableTreeNode<T>> children = [];
 
-  SimpleNode(this.name, this.data);
+  AddableTreeNode({required this.key,required this.label, this.data});
 }
