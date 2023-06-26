@@ -3,8 +3,25 @@ import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 
 // TODO: Implement own resizing/window dragging method
-class AppWindowManager 
+class AppWindowManager with WindowListener
 {
+  static AppWindowManager instance = AppWindowManager._();
+  AppWindowManager._(){
+    windowManager.addListener(this);
+  }
+  factory AppWindowManager() => instance;
+
+  Size windowSize = defaultSize;
+
+  @override
+  void onWindowResize() {
+    super.onWindowResize();
+    windowManager.getSize().then((value) => windowSize = value);
+  }
+  
+
+  Size currentSize = defaultSize;
+
   static const Size defaultSize = Size(800, 500);
   static const Size notificationModeSize = Size(400, 150);
 
@@ -43,6 +60,8 @@ class AppWindowManager
 
 
     await Future.wait(futures);
+
+    
     
   }
 

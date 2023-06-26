@@ -3,6 +3,7 @@ import 'package:flashcard_desktop_app/src/views/flashcard_directories_listing_vi
 import 'package:flashcard_desktop_app/src/views/flashcard_view.dart';
 import 'package:flashcard_desktop_app/src/views/main_view.dart';
 import 'package:flashcard_desktop_app/src/views/study_view.dart';
+import 'package:flashcard_desktop_app/src/window/app_window_manager.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:flutter/material.dart';
 
@@ -59,7 +60,8 @@ class NavigationManager {
               return const MainView();
             },
             transitionsBuilder: (_, Animation<double> animation, Animation<double> second, Widget child) {
-
+              
+              final double windowWidth = AppWindowManager.instance.windowSize.width; 
                       
               CurvedAnimation curvedIn = CurvedAnimation(parent: animation, curve: Curves.decelerate);
               CurvedAnimation curvedOut = CurvedAnimation(parent: second, curve: Curves.decelerate);
@@ -70,9 +72,9 @@ class NavigationManager {
                   child: FadeTransition(
                     opacity: Tween<double>(begin: 1.0, end: 0.0).animate(curvedOut),
                     child: Transform.translate(
-                      offset: Offset(500*(1-curvedIn.value),0),
+                      offset: Offset(windowWidth*(1-curvedIn.value),0),
                       child: Transform.translate(
-                        offset: Offset(500*curvedOut.value,0),
+                        offset: Offset(windowWidth*curvedOut.value,0),
                         child: child),
                     ),
                   )),

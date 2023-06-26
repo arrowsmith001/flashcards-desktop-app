@@ -26,8 +26,8 @@ class StudyView extends StatefulWidget {
 
 class _StudyViewState extends State<StudyView> {
 
-  int timeInterval = 10;
-  int secondsRemaining = 10;
+  int timeInterval = 3;
+  int secondsRemaining = 3;
 
   List<Flashcard> flashcardsToDo = [];
   List<Flashcard> flashcardsDone = [];
@@ -38,36 +38,36 @@ class _StudyViewState extends State<StudyView> {
 
     ServicesBinding.instance.keyboard.addHandler(onKey);
   }
+  
 
-  Timer? t;
+  late Timer t;
 
   void initTimer(){
     secondsRemaining = timeInterval;
-    resetTimer(); 
-  }
-
-  void resetTimer(){
-    t?.cancel();
     t = Timer.periodic(const Duration(seconds: 1), onTick);
   }
 
-  void onTick(Timer t){
-    decrementSeconds();
+
+  void onTick(Timer t) async {
+    if(secondsRemaining > 0) {
+      setState(() {
+        secondsRemaining --;
+      });
+    }
+    if(secondsRemaining == 0) onZero();
   }
 
-  void decrementSeconds(){
+  void advanceTime() { 
     setState(() {
-      if(secondsRemaining == 0)
-      {
-        onZero();
-      }
-      secondsRemaining--;
+      secondsRemaining = 1;
     });
   }
 
+
   void onZero() async {
     AppLogger.log('onZero');
-    t?.cancel();
+    t.cancel();
+    
     secondsRemaining = timeInterval;
     
     final r = Random();
@@ -154,8 +154,7 @@ class _StudyViewState extends State<StudyView> {
                       Row(children: 
                       [
                           material.IconButton(onPressed: (){
-                            decrementSeconds();
-                            resetTimer();
+                            advanceTime();
                           }, icon: const Icon(material.Icons.add))
                       ],)
     
@@ -165,6 +164,7 @@ class _StudyViewState extends State<StudyView> {
     );
 
   }
+  
 
   
 

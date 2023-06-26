@@ -29,6 +29,11 @@ List<String> selectedDirectoryIds = [];
     return Scaffold(
       appBar: AppBar(
         title: const Text("Browse Decks", style: TextStyle(color: Colors.black)),
+        actions: [
+          IconButton(onPressed: () {
+
+          }, icon: Icon(Icons.expand))
+        ],
         backgroundColor: ThemeData.light().scaffoldBackgroundColor, 
       shadowColor: const Color.fromARGB(0, 0, 0, 0),),
       body: FutureBuilder(
@@ -39,25 +44,24 @@ List<String> selectedDirectoryIds = [];
           if(snapshot.hasError) return const Center(child: Text("There was an error"));
     
           final data = snapshot.data!;
-    
+          final node = buildTree(data, (dir) => dir.path);
+          final _treeController = TreeViewController(children: node.children, selectedKey: '');
+
           return Stack(children: [
 
             TreeView(
-              
-              controller: TreeViewController(
-                children:data.children, selectedKey: ''),
+              controller: _treeController,
                 nodeBuilder: (context, node)
                 {
                   final FlashcardDirectory? data = node.data;
                   if(data != null)
                   {
-                    return ListTile(title: Text(node.label), trailing: Checkbox(
+                    return ListTile(
+                      onTap: () => toggleDirectorySelected(data.id),
+                      title: Text(node.label), trailing: Checkbox(
                       value: selectedDirectoryIds.contains(data.id),
                       onChanged: (value) {
-                        setState(() {
-                          if(value ?? false) selectedDirectoryIds.add(data.id);
-                          else selectedDirectoryIds.remove(data.id);
-                        });
+                        toggleDirectorySelected(data.id);
                     }));
                   }
                   return ListTile(title: Text(node.label));
@@ -103,7 +107,7 @@ List<String> selectedDirectoryIds = [];
   }
 
 
-  Future<Node<FlashcardDirectory?>> fetchFlashcardDirectories() async {
+  Future<List<FlashcardDirectory>> fetchFlashcardDirectories() async {
 
 
     final docs = await Firestore.instance.collection("flashcardDirectories").limit(10).get();
@@ -114,10 +118,11 @@ List<String> selectedDirectoryIds = [];
     // Organize into folder structure
     directoriesListed.sort((d1, d2) => d1.path.toLowerCase().compareTo(d2.path.toLowerCase()));
 
-    return buildTree(directoriesListed, (dir) => dir.path);
+    return directoriesListed;
   
 
 }
+
 
 Node<T?> buildTree<T>(List<T> dataList, String Function(T) getPath) {
 
@@ -162,8 +167,17 @@ Node<T> convertToImmutableTree<T>(AddableTreeNode<T> addableNode) {
   List<Node<T>> children = addableNode.children
       .map((child) => convertToImmutableTree(child))
       .toList();
-  return Node(children: children, data: data, key: addableNode.key, label: addableNode.label);
+  return Node(children: children, data: data, key: addableNode.key, label: addableNode.label, expanded: true);
 }
+
+  void toggleDirectorySelected(String id) {
+        setState(() {
+            if(!selectedDirectoryIds.contains(id)) selectedDirectoryIds.add(id);
+            else selectedDirectoryIds.remove(id);
+          });
+  }
+  
+  
 
 }
 
