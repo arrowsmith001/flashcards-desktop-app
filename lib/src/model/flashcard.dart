@@ -5,6 +5,8 @@ abstract class Serializable {
   Map<String, dynamic> serialized();
 }
 
+
+
 class Flashcard implements Serializable
 {
   Flashcard(this.id, this.prompt, this.response);
@@ -30,7 +32,6 @@ class FlashcardDirectory {
   final String path;
   final int depth;
 
-  final List<FlashcardDirectory> childDirectories = [];
   final List<Flashcard> childFlashcards = [];
 
   String get name => path.split('/').last;
@@ -41,3 +42,15 @@ class FlashcardDirectory {
 
 }
 
+class FlashcardResult implements Serializable {
+  final Flashcard flashcard;
+  final bool correct;
+  final DateTime timestamp;
+
+  FlashcardResult(this.flashcard, this.correct, this.timestamp);
+  
+  @override
+  Map<String, dynamic> serialized() {
+    return {'flashcardId' : flashcard.id, 'correct' : correct, 'timestamp' : timestamp};
+  }
+}

@@ -27,6 +27,8 @@ class AppWindowManager with WindowListener
 
   static WindowManager get windowManager => WindowManager.instance;
 
+  static Future<void> blur() => windowManager.blur();
+  
   static Future<void> dismissAndMakeInvisible() async {
      
     final futures = <Future>[windowManager.blur(), windowManager.setOpacity(0), windowManager.setAlwaysOnBottom(true)]
@@ -59,7 +61,10 @@ class AppWindowManager with WindowListener
       ..add(windowManager.setAlwaysOnBottom(false));
 
 
-    await Future.wait(futures);
+    for(var f in futures)
+    {
+      await f;
+    }
 
     
     
@@ -79,14 +84,21 @@ class AppWindowManager with WindowListener
       windowManager.setAlwaysOnTop(true)
       ];
 
-    await Future.wait(futures);
-    
+    for(var f in futures)
+    {
+      await f;
+    }
+
     futures..clear()
       ..add(windowManager.show())
       ..add(windowManager.focus())
       ..add(windowManager.setOpacity(1));
 
-    await Future.wait(futures);
+        for(var f in futures)
+    {
+      await f;
+    }
+
   }
 
 }

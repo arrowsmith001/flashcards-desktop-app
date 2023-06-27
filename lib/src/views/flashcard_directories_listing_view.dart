@@ -28,12 +28,8 @@ List<String> selectedDirectoryIds = [];
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text("Browse Decks", style: TextStyle(color: Colors.black)),
-        actions: [
-          IconButton(onPressed: () {
-
-          }, icon: Icon(Icons.expand))
-        ],
         backgroundColor: ThemeData.light().scaffoldBackgroundColor, 
       shadowColor: const Color.fromARGB(0, 0, 0, 0),),
       body: FutureBuilder(
@@ -47,63 +43,54 @@ List<String> selectedDirectoryIds = [];
           final node = buildTree(data, (dir) => dir.path);
           final _treeController = TreeViewController(children: node.children, selectedKey: '');
 
-          return Stack(children: [
+          return Column(children: [
 
-            TreeView(
-              controller: _treeController,
-                nodeBuilder: (context, node)
-                {
-                  final FlashcardDirectory? data = node.data;
-                  if(data != null)
+            Expanded(
+              child: TreeView(
+                controller: _treeController,
+                  nodeBuilder: (context, node)
                   {
-                    return ListTile(
-                      onTap: () => toggleDirectorySelected(data.id),
-                      title: Text(node.label), trailing: Checkbox(
-                      value: selectedDirectoryIds.contains(data.id),
-                      onChanged: (value) {
-                        toggleDirectorySelected(data.id);
-                    }));
-                  }
-                  return ListTile(title: Text(node.label));
+                    final FlashcardDirectory? data = node.data;
+                    if(data != null)
+                    {
+                      return ListTile(
+                        onTap: () => toggleDirectorySelected(data.id),
+                        title: Text(node.label), trailing: Checkbox(
+                        value: selectedDirectoryIds.contains(data.id),
+                        onChanged: (value) {
+                          toggleDirectorySelected(data.id);
+                      }));
+                    }
+                    return ListTile(title: Text(node.label));
+            
+                  },
+                  
+                  ),
+            ),
 
-                },
-                
-                ),
+            selectedDirectoryIds.isEmpty ? Container()
+           : Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+            Padding(
+             padding: const EdgeInsets.all(8.0),
+             child: TextButton(onPressed:() => onBeginStudy(context), 
+             child: Container(
+              height: 45,
+              width: 150,
+              child: Center(child: Text('Begin Study (${selectedDirectoryIds.length})')))),
+           )
+           ],)
 
-                
-
-/*             ListView(children: data.map((dir) {
-              
-                  final id = dir.id;
-
-            return ListTile(
-              title: Text(dir.path),
-              leading: id == null ? Container() :  Checkbox(
-              value: directoryIds.contains(dir.id),
-              onChanged: (value) {
-              setState(() {
-                  if(!directoryIds.contains(id)){ directoryIds.add(id); }
-                  else { directoryIds.remove(id); }
-              });
-            }),
-          );
-            }).toList()), */
-    
-            selectedDirectoryIds.isEmpty ? Container() 
-            : Align(
-              alignment: Alignment.bottomCenter,
-              child: TextButton(child: Text('Begin Study (${selectedDirectoryIds.length})'),
-              onPressed: () 
-              {
-                Navigator.pushNamed(context, NavigationManager.studyRoute, arguments : {'flashcardDirectoryIds' : selectedDirectoryIds});
-              }),
-          
-            )
           ]);
     
     
         }),
     );
+  }
+
+  void onBeginStudy(context) {
+    Navigator.pushNamed(context, NavigationManager.studyRoute, arguments : {'flashcardDirectoryIds' : selectedDirectoryIds});
   }
 
 

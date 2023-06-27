@@ -1,7 +1,10 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
 import 'package:flashcard_desktop_app/src/model/flashcard.dart';
 import 'package:flashcard_desktop_app/src/window/app_window_manager.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 class FlashcardView extends StatefulWidget {
   FlashcardView(this.flashcard, {super.key});
@@ -14,19 +17,35 @@ class FlashcardView extends StatefulWidget {
 }
 
 class _FlashcardViewState extends State<FlashcardView>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
 
   Flashcard get flashcard  => widget.flashcard;
 
   late AnimationController _entryAnimationController;
-  late CurvedAnimation curvedAnim;
+  late CurvedAnimation entryAnim;
+
+  late AnimationController _transitionAnimationController;
+  late CurvedAnimation transitionAnim;
 
   dismissFlashcard() async
   {
+
+
+    SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+      
+        AppWindowManager.dismissAndMakeInvisible().then((value) => Navigator.of(context, rootNavigator: true).pop());
+
+     });
+  }
+
+  
+  onTapResponse(bool bool) {
+
     setState(() {
       transitioningBack = true;
     });
-    await AppWindowManager.dismissAndMakeInvisible().then((value) => Navigator.of(context, rootNavigator: true).pop());
+
+    AppWindowManager.dismissAndMakeInvisible().then((value) => Navigator.of(context).pop(bool));
   }
 
   @override
@@ -37,10 +56,16 @@ class _FlashcardViewState extends State<FlashcardView>
       vsync: this, 
       value: 1, 
       duration: const Duration(milliseconds: 500));
-    _entryAnimationController.addListener(() {setState(() {
-    });});
+    _entryAnimationController.addListener(() {setState(() {});});
 
-    curvedAnim = CurvedAnimation(parent: _entryAnimationController, curve: Curves.easeOut);
+    _transitionAnimationController = AnimationController(
+      vsync: this, 
+      value: 0, 
+      duration: const Duration(milliseconds: 500));
+    _transitionAnimationController.addListener(() {setState(() {});});
+
+    entryAnim = CurvedAnimation(parent: _entryAnimationController, curve: Curves.easeOut);
+    transitionAnim = CurvedAnimation(parent: _transitionAnimationController, curve: Curves.easeInOut);
     
     AppWindowManager.setNotificationModeSizeAndPosition().then((v) => _entryAnimationController.animateTo(0));
   }
@@ -48,16 +73,33 @@ class _FlashcardViewState extends State<FlashcardView>
   @override
   void dispose() {
     _entryAnimationController.dispose();
-    curvedAnim.dispose();
+    entryAnim.dispose();
     super.dispose();
   }     
 
   bool transitioningBack = false;
+  int flashcardState = 0;
+
+  void onTap() {
+    setState(() {
+      switch(flashcardState)
+      {
+        case 0:
+          _transitionAnimationController.animateTo(1);
+          flashcardState = 1;
+        case 1:
+          _transitionAnimationController.animateTo(0);
+          flashcardState = 0;
+      }
+      
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Transform.translate(
-        offset: Offset(AppWindowManager.notificationModeSize.width * curvedAnim.value, 0),
+    return transitioningBack ? const Center(child: CircularProgressIndicator())
+    : Transform.translate(
+        offset: Offset(AppWindowManager.notificationModeSize.width * entryAnim.value, 0),
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           
@@ -65,111 +107,96 @@ class _FlashcardViewState extends State<FlashcardView>
             borderRadius: BorderRadius.circular(8.0),
             child: Scaffold(
               body: transitioningBack ? const Center(child: CircularProgressIndicator()) 
-              : Navigator(
-                  key: widget._navKey,
-                  initialRoute: '/prompt',
-                  onGenerateRoute: (settings){
-                      final args = settings.arguments as Map<String, dynamic>?;
-                      switch(settings.name)
-                      {
-                        case '/prompt':
-                        {
-                          return PageRouteBuilder(
-                            pageBuilder: (context, a1, a2) => buildPrompt(context, a1, a2),
-/*                             transitionsBuilder: (_, anim1, anim2, child){
-
-                              final double windowWidth = AppWindowManager.notificationModeSize.width; 
-                              return Transform.translate(
-                                    offset: Offset(windowWidth*(1-anim1.value),0),
-                                    child: Transform.translate(
-                                    offset: Offset(-windowWidth*(anim2.value),0),
-                                    child: child));
-                            } */
-                            );
-                        }
-                        case '/response':
-                        {
-                          return PageRouteBuilder(
-                            pageBuilder: (context, a1, a2) => buildResponse(context, a1, a2),
-/*                             transitionsBuilder: (_, anim1, anim2, child){
-
-                              final double windowWidth = AppWindowManager.notificationModeSize.width; 
-                              return Transform.translate(
-                                    offset: Offset(windowWidth*(1-anim1.value),0),
-                                    child: child);
-                            } */
-                            );
-                        }
-                      }
-
-                  }
-              )),
+              : buildFlashcard(context)),
           ),
         ));
   }
   
   double get windowWidth => AppWindowManager.notificationModeSize.width; 
 
-  Widget buildPrompt(BuildContext context, Animation<double> anim1, Animation<double> anim2) {
-    AppLogger.log("prompt: ${anim1.value} ${anim2.value}");
-
-        return InkWell(
-            hoverColor: Colors.grey.shade300,
-            onTap: () => Navigator.of(widget._navKey.currentContext!).pushNamed('/response'),
-            child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(children: 
-              [
+  Widget buildFlashcard(BuildContext context) {
+    return InkWell(
+      onTap: () => onTap(),
+      child: Row(
+        children: 
+      [
+        Expanded(child: 
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Stack(children: [
+              Transform.translate(offset: Offset(0, -windowWidth * transitionAnim.value),
+                child: buildPrompt(context)),
+              Transform.translate(offset: Offset(0, windowWidth * (1 - transitionAnim.value)),
+                child: buildResponse(context)),
+            ],),
+          )),
+    
+          Stack(children: [
+            Opacity(
+              opacity: clampDouble((1 - transitionAnim.value), 0, 1),
+              child: Column(children: [
                 Expanded(
-                  child: Transform.translate(
-                      offset: Offset(windowWidth*(1-anim1.value),0),
-                      child: Text(flashcard.prompt, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+                  child: Container(
+                  width: 50,
+                  decoration: const BoxDecoration(
+                                  shape: BoxShape.rectangle),
+                              child: const Icon(Icons.ads_click_sharp, color: Colors.black),
+                            ),
                 )
-                ,
-
-                FadeTransition(
-                  opacity: anim1,
-                  child: Container(decoration: const BoxDecoration(
-                            shape: BoxShape.rectangle),
-                        child: const Icon(Icons.arrow_forward, color: Colors.black),
-                      ),
-                )
-              ])
-          ),
-              
-          ),
-            );
-  }  
-  Widget buildResponse(BuildContext context, Animation<double> anim1, Animation<double> anim2) {
-    AppLogger.log("response: ${anim1.value} ${anim2.value}");
-        return InkWell(
-            hoverColor: Colors.grey.shade300,
-            onTap: () => dismissFlashcard(),
-            child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(children: 
-              [
+              ]),
+            ),
+    
+            Opacity(
+              opacity: clampDouble(transitionAnim.value, 0, 1),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                 children: [
                 Expanded(
-                  child: Transform.translate(
-                      offset: Offset(windowWidth*(anim1.value),0),
-                      child: Text(flashcard.response, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+                  child: IconButton(
+                    onPressed: () => onTapResponse(true),
+                    icon: Icon(Icons.thumb_up, color: Colors.green),
+/*                     child: Container(decoration: const BoxDecoration(
+                                    shape: BoxShape.rectangle),
+                                child: const Icon(Icons.thumb_up, color: Colors.green),
+                              ), */
+                  ),
+                ),
+                Expanded(
+                  child: IconButton(
+                    onPressed: () => onTapResponse(false),
+                    icon: Icon(Icons.thumb_down, color: Colors.red),
+/*                     child: Container(decoration: const BoxDecoration(
+                                    shape: BoxShape.rectangle),
+                                child: const Icon(Icons.thumb_up, color: Colors.green),
+                              ), */
+                  ),
                 )
-                ,
-
-                 FadeTransition(
-                  opacity: anim1,
-                  child: Container(decoration: const BoxDecoration(
-                            shape: BoxShape.rectangle),
-                        child: const Icon(Icons.close, color: Colors.black),
-                      ),
-                               )
-              ])
-          ),
-              
-          ),
-            );
+              ]),
+            )
+          ])
+      ]),
+    );
   }
+
+  Widget buildPrompt(BuildContext context) {
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Flexible(child: AutoSizeText(flashcard.prompt, textAlign: TextAlign.center, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+          ],
+        );
+  }  
+
+  Widget buildResponse(BuildContext context) {
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Flexible(child: AutoSizeText(flashcard.response, textAlign: TextAlign.center, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+          ],
+        );
+  }
+  
+  
+  
   
 }

@@ -85,7 +85,7 @@ class NavigationManager {
         );
       case studyRoute:
         return  PageRouteBuilder(
-          transitionDuration: const Duration(microseconds: 0),
+          transitionDuration: Duration.zero,
             pageBuilder: (BuildContext context,Animation<double> animation,
                 Animation<double> secondaryAnimation){
               return StudyView(args!['flashcardDirectoryIds']);
@@ -93,8 +93,8 @@ class NavigationManager {
             
         );
       case flashcardRoute:
-        return  PageRouteBuilder(
-          transitionDuration: const Duration(microseconds: 0),
+        return  PageRouteBuilder<bool>(
+          transitionDuration: Duration.zero,
             pageBuilder: (BuildContext context,Animation<double> animation,
                 Animation<double> secondaryAnimation)
                 {
