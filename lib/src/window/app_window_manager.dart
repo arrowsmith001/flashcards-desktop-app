@@ -1,15 +1,24 @@
 
+
+import 'dart:async';
+
+import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 
 // TODO: Implement own resizing/window dragging method
-class AppWindowManager with WindowListener
+class WindowManagerWrapper with WindowListener
 {
-  static AppWindowManager instance = AppWindowManager._();
-  AppWindowManager._(){
+
+  WindowManagerWrapper(){
     windowManager.addListener(this);
   }
-  factory AppWindowManager() => instance;
+
+  WindowOptions defaultOptions = const WindowOptions(
+    backgroundColor: Colors.transparent,
+    skipTaskbar: false,
+    titleBarStyle: TitleBarStyle.hidden,
+  );
 
   Size windowSize = defaultSize;
 
@@ -18,18 +27,30 @@ class AppWindowManager with WindowListener
     super.onWindowResize();
     windowManager.getSize().then((value) => windowSize = value);
   }
+
+  @override
+  void onWindowEvent(String eventName) {
+    super.onWindowEvent(eventName);
+    _windowEventStreamController.sink.add(eventName);
+  }
+
+  final StreamController<String> _windowEventStreamController = StreamController.broadcast();
+  Stream<String> get windowEvents => _windowEventStreamController.stream;
+
+  
+
   
 
   Size currentSize = defaultSize;
 
-  static const Size defaultSize = Size(800, 500);
+  static const Size defaultSize = Size(1500, 800);
   static const Size notificationModeSize = Size(400, 150);
 
-  static WindowManager get windowManager => WindowManager.instance;
+  WindowManager get windowManager => WindowManager.instance;
 
-  static Future<void> blur() => windowManager.blur();
+  Future<void> blur() => windowManager.blur();
   
-  static Future<void> dismissAndMakeInvisible() async {
+  Future<void> dismissAndMakeInvisible() async {
      
     final futures = <Future>[windowManager.blur(), windowManager.setOpacity(0), windowManager.setAlwaysOnBottom(true)]
       
@@ -40,14 +61,14 @@ class AppWindowManager with WindowListener
       await Future.wait(futures); 
   }
 
-  static Future<void> makeVisible() async {
+  Future<void> makeVisible() async {
     final futures = <Future>[windowManager.setOpacity(1)]
       ;
 
     await Future.wait(futures);
   }
 
-  static Future<void> setDefaultSizeAndPosition({hide = false}) async
+  Future<void> setDefaultSizeAndPosition({hide = false}) async
   {
     final futures = <Future>[];
 
@@ -70,7 +91,7 @@ class AppWindowManager with WindowListener
     
   }
 
-  static Future<void> setNotificationModeSizeAndPosition() async
+  Future<void> setNotificationModeSizeAndPosition() async
   {
 
     await windowManager.setOpacity(0);
@@ -100,5 +121,36 @@ class AppWindowManager with WindowListener
     }
 
   }
+
+  void minimize() {
+    windowManager.minimize();
+  }
+
+  Future<bool> isMaximised() => windowManager.isMaximized(); 
+  Future<bool> isMinimized() => windowManager.isMinimized(); 
+
+  void maximize() {
+    windowManager.isMaximized()
+      .then((maximized) => 
+        maximized ? windowManager.unmaximize() :  windowManager.maximize());
+    
+  }
+  void close() {
+    windowManager.close();
+  }
+
+  Future<void> drag() async {
+    await windowManager.startDragging();
+  }
+
+  Future<void> initialize() async {
+     await windowManager.ensureInitialized();
+     await windowManager.waitUntilReadyToShow(defaultOptions, () async {
+        await setDefaultSizeAndPosition();               
+        await windowManager.show();
+        await windowManager.focus();
+      });
+  }
+  
 
 }

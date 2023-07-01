@@ -4,12 +4,13 @@ import 'dart:math';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
-import 'package:flashcard_desktop_app/src/navigation/navigation_manager.dart';
+import 'package:flashcard_desktop_app/src/navigation/app_navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firedart/firedart.dart';
 import 'package:flashcard_desktop_app/src/model/flashcard.dart';
 import 'package:flutter/material.dart' as material;
+import 'package:get_it/get_it.dart';
 import 'package:logger/logger.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 
@@ -27,6 +28,8 @@ class StudyView extends StatefulWidget {
 }
 
 class _StudyViewState extends State<StudyView> {
+
+  WindowManagerWrapper get windowManager => GetIt.I.get<WindowManagerWrapper>(); 
 
   bool isTransitioning = false;
 
@@ -95,17 +98,17 @@ class _StudyViewState extends State<StudyView> {
     final r = Random();
     final flashcard = flashcardsToDo[r.nextInt(flashcardsToDo.length)];
 
-    final result = await Navigator.pushNamed<bool>(context, NavigationManager.flashcardRoute, arguments: {'flashcard' : flashcard.serialized()});
+    final result = await Navigator.pushNamed<bool>(context, AppNavigation.flashcardRoute, arguments: {'flashcard' : flashcard.serialized()});
 
-    await AppWindowManager.setDefaultSizeAndPosition();
-    await AppWindowManager.blur();
+    await windowManager.setDefaultSizeAndPosition();
+    await windowManager.blur();
 
-    await AppWindowManager.makeVisible();
+    await windowManager.makeVisible();
 
     if(result != null)
     {
       flashcardsToDo.remove(flashcard);
-      flashcardsResults.add(FlashcardResult(flashcard, result, DateTime.now()));
+      flashcardsResults.add(FlashcardResult(null, flashcard, result, DateTime.now()));
     }
     
     initTimer();

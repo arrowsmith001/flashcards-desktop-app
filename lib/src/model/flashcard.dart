@@ -1,17 +1,17 @@
 
 import 'package:firedart/firestore/models.dart';
 
-abstract class Serializable {
-  Map<String, dynamic> serialized();
-}
+import '../custom/data/database_service.dart';
+import '../custom/data/serializable.dart';
 
 
 
-class Flashcard implements Serializable
+
+
+class Flashcard extends Serializable
 {
-  Flashcard(this.id, this.prompt, this.response);
+  Flashcard(super.id, this.prompt, this.response);
 
-  final String id;
   final String prompt;
   final String response;
 
@@ -20,15 +20,17 @@ class Flashcard implements Serializable
     return {'id' : id, 'prompt' : prompt, 'response' : response};
   }
 
-  static Flashcard deserialized(Map<String, dynamic> map) {
-    return Flashcard(map['id']!, map['prompt']!, map['response']!);
+  static Flashcard deserialize(Map<String, dynamic> map) {
+    return Flashcard(map['id'], map['prompt'], map['response']);
   }
+  
+
 }
 
-class FlashcardDirectory {
-  FlashcardDirectory(this.id, this.path, this.depth);
+
+class FlashcardDirectory extends Serializable {
+  FlashcardDirectory(super.id, this.path, this.depth);
   
-  final String id;
   final String path;
   final int depth;
 
@@ -36,18 +38,24 @@ class FlashcardDirectory {
 
   String get name => path.split('/').last;
 
-  static FlashcardDirectory fromFirestoreDocument(Document doc) {
-    return FlashcardDirectory(doc.id, doc['path'], doc['depth']);
+  static FlashcardDirectory deserialize(Map<String, dynamic> map) {
+    return FlashcardDirectory(map['id'], map['path'], map['depth']);
+  }
+  
+  @override
+  Map<String, dynamic> serialized() {
+    return {'id' : id, 'path' : path, 'depth' : depth};
   }
 
 }
 
-class FlashcardResult implements Serializable {
+class FlashcardResult extends Serializable {
+
   final Flashcard flashcard;
   final bool correct;
   final DateTime timestamp;
 
-  FlashcardResult(this.flashcard, this.correct, this.timestamp);
+  FlashcardResult(super.id, this.flashcard, this.correct, this.timestamp);
   
   @override
   Map<String, dynamic> serialized() {

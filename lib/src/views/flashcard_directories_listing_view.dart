@@ -5,11 +5,14 @@ import 'dart:convert';
 
 import 'package:firedart/firedart.dart';
 import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
-import 'package:flashcard_desktop_app/src/navigation/navigation_manager.dart';
+import 'package:flashcard_desktop_app/src/navigation/app_navigation.dart';
+import 'package:flashcard_desktop_app/src/services/app_database_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_treeview/flutter_treeview.dart';
+import 'package:get_it/get_it.dart';
 
 import '../model/flashcard.dart';
+import '../window/app_window_manager.dart';
 
 //TODO: TREE STRUCTURE FFS
 
@@ -22,6 +25,8 @@ class FlashcardDirectoriesListingView extends StatefulWidget {
 
 class _FlashcardDirectoriesListingViewState extends State<FlashcardDirectoriesListingView> {
 
+  WindowManagerWrapper get windowManager => GetIt.I.get<WindowManagerWrapper>(); 
+
 List<String> selectedDirectoryIds = [];
 
   @override
@@ -30,10 +35,9 @@ List<String> selectedDirectoryIds = [];
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: const Text("Browse Decks", style: TextStyle(color: Colors.black)),
-        backgroundColor: ThemeData.light().scaffoldBackgroundColor, 
       shadowColor: const Color.fromARGB(0, 0, 0, 0),),
       body: FutureBuilder(
-        future: fetchFlashcardDirectories(),
+        future: GetIt.I.get<AppDataStore>().databaseService.flashcardDirectoryService.fetchAll(),
         builder: (context, snapshot)
         {
           if(!snapshot.hasData) return const Center(child: CircularProgressIndicator());
@@ -54,11 +58,11 @@ List<String> selectedDirectoryIds = [];
                     if(data != null)
                     {
                       return ListTile(
-                        onTap: () => toggleDirectorySelected(data.id),
+                        onTap: () => toggleDirectorySelected(data.id!),
                         title: Text(node.label), trailing: Checkbox(
                         value: selectedDirectoryIds.contains(data.id),
                         onChanged: (value) {
-                          toggleDirectorySelected(data.id);
+                          toggleDirectorySelected(data.id!);
                       }));
                     }
                     return ListTile(title: Text(node.label));
@@ -90,25 +94,10 @@ List<String> selectedDirectoryIds = [];
   }
 
   void onBeginStudy(context) {
-    Navigator.pushNamed(context, NavigationManager.studyRoute, arguments : {'flashcardDirectoryIds' : selectedDirectoryIds});
+    Navigator.pushNamed(context, AppNavigation.studyRoute, arguments : {'flashcardDirectoryIds' : selectedDirectoryIds});
   }
 
 
-  Future<List<FlashcardDirectory>> fetchFlashcardDirectories() async {
-
-
-    final docs = await Firestore.instance.collection("flashcardDirectories").limit(10).get();
-    
-    // Now we have a list of unconnected directories
-    final directoriesListed = docs.map(FlashcardDirectory.fromFirestoreDocument).toList();
-
-    // Organize into folder structure
-    directoriesListed.sort((d1, d2) => d1.path.toLowerCase().compareTo(d2.path.toLowerCase()));
-
-    return directoriesListed;
-  
-
-}
 
 
 Node<T?> buildTree<T>(List<T> dataList, String Function(T) getPath) {

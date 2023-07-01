@@ -1,7 +1,12 @@
 import 'package:firedart/firedart.dart';
 import 'package:flashcard_desktop_app/src/classes/app_config.dart';
-import 'package:flashcard_desktop_app/src/navigation/navigation_manager.dart';
+import 'package:flashcard_desktop_app/src/custom/data/auth_service.dart';
+import 'package:flashcard_desktop_app/src/navigation/app_navigation.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+
+import '../services/app_database_service.dart';
+import '../window/app_window_manager.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -11,34 +16,13 @@ class LoginView extends StatefulWidget {
 }
 
 class _LoginViewState extends State<LoginView> {
-
-  bool isInitialized = false;  
-  Future<bool> initializeDatabase() async {
-
-    if(isInitialized) return true;
-
-    var config = AppConfigManager.instance;
-
-try{
-      FirebaseAuth.initialize(config.apiKey!, VolatileStore());
-    Firestore.initialize(config.projectId!); // Firestore reuses the auth client
-
-    var auth = FirebaseAuth.instance;
-    await auth.signIn(config.email!, config.password!);
-}
-catch(e){
-  
-}
-    
-    isInitialized = true;
-    return true;
-  }
+  WindowManagerWrapper get windowManager => GetIt.I.get<WindowManagerWrapper>(); 
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: FutureBuilder(
-        future: initializeDatabase(),
+        future: GetIt.I.get<AppAuthService>().authService.loginWithEmailAndPassword('arrowsmithalexander@gmail.com', '123456'),
         builder: (context, snapshot)
         {
           if(!snapshot.hasData)
@@ -51,7 +35,7 @@ catch(e){
             return Center(child: Text("There was a Login error: ${snapshot.error.toString()}"));
           }
     
-          return TextButton(onPressed: () => Navigator.pushNamed(context, NavigationManager.mainRoute), 
+          return TextButton(onPressed: () => Navigator.pushNamed(context, AppNavigation.mainRoute), 
           child: const Center(child: Text("Login successful")));
         }),
     );

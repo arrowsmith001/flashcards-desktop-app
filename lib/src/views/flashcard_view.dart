@@ -5,6 +5,7 @@ import 'package:flashcard_desktop_app/src/window/app_window_manager.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:get_it/get_it.dart';
 
 class FlashcardView extends StatefulWidget {
   FlashcardView(this.flashcard, {super.key});
@@ -18,6 +19,7 @@ class FlashcardView extends StatefulWidget {
 
 class _FlashcardViewState extends State<FlashcardView>
     with TickerProviderStateMixin {
+  WindowManagerWrapper get windowManager => GetIt.I.get<WindowManagerWrapper>(); 
 
   Flashcard get flashcard  => widget.flashcard;
 
@@ -33,7 +35,7 @@ class _FlashcardViewState extends State<FlashcardView>
 
     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
       
-        AppWindowManager.dismissAndMakeInvisible().then((value) => Navigator.of(context, rootNavigator: true).pop());
+        windowManager.dismissAndMakeInvisible().then((value) => Navigator.of(context, rootNavigator: true).pop());
 
      });
   }
@@ -45,7 +47,7 @@ class _FlashcardViewState extends State<FlashcardView>
       transitioningBack = true;
     });
 
-    AppWindowManager.dismissAndMakeInvisible().then((value) => Navigator.of(context).pop(bool));
+    windowManager.dismissAndMakeInvisible().then((value) => Navigator.of(context).pop(bool));
   }
 
   @override
@@ -67,7 +69,7 @@ class _FlashcardViewState extends State<FlashcardView>
     entryAnim = CurvedAnimation(parent: _entryAnimationController, curve: Curves.easeOut);
     transitionAnim = CurvedAnimation(parent: _transitionAnimationController, curve: Curves.easeInOut);
     
-    AppWindowManager.setNotificationModeSizeAndPosition().then((v) => _entryAnimationController.animateTo(0));
+    windowManager.setNotificationModeSizeAndPosition().then((v) => _entryAnimationController.animateTo(0));
   }
 
   @override
@@ -99,7 +101,7 @@ class _FlashcardViewState extends State<FlashcardView>
   Widget build(BuildContext context) {
     return transitioningBack ? const Center(child: CircularProgressIndicator())
     : Transform.translate(
-        offset: Offset(AppWindowManager.notificationModeSize.width * entryAnim.value, 0),
+        offset: Offset(WindowManagerWrapper.notificationModeSize.width * entryAnim.value, 0),
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           
@@ -112,7 +114,7 @@ class _FlashcardViewState extends State<FlashcardView>
         ));
   }
   
-  double get windowWidth => AppWindowManager.notificationModeSize.width; 
+  double get windowWidth => WindowManagerWrapper.notificationModeSize.width; 
 
   Widget buildFlashcard(BuildContext context) {
     return InkWell(

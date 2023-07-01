@@ -6,11 +6,12 @@ import 'package:flashcard_desktop_app/src/views/study_view.dart';
 import 'package:flashcard_desktop_app/src/window/app_window_manager.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 
 import '../views/login_view.dart';
 
 
-class NavigationManager {
+class AppNavigation {
 
   static const String entryRoute = '/';
   static const String mainRoute = '/main';
@@ -61,7 +62,7 @@ class NavigationManager {
             },
             transitionsBuilder: (_, Animation<double> animation, Animation<double> second, Widget child) {
               
-              final double windowWidth = AppWindowManager.instance.windowSize.width; 
+              final double windowWidth = GetIt.I.get<WindowManagerWrapper>().windowSize.width; 
                       
               CurvedAnimation curvedIn = CurvedAnimation(parent: animation, curve: Curves.decelerate);
               CurvedAnimation curvedOut = CurvedAnimation(parent: second, curve: Curves.decelerate);
@@ -98,7 +99,7 @@ class NavigationManager {
             pageBuilder: (BuildContext context,Animation<double> animation,
                 Animation<double> secondaryAnimation)
                 {
-                  final flashcard = Flashcard.deserialized(args!['flashcard']);
+                  final flashcard = Flashcard.deserialize(args!['flashcard']);
                   return FlashcardView(flashcard);
             }
         );
