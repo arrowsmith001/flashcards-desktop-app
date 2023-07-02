@@ -1,7 +1,7 @@
 import 'package:firedart/firedart.dart';
 import 'package:flashcard_desktop_app/src/classes/app_config.dart';
-import 'package:flashcard_desktop_app/src/custom/data/auth_service.dart';
-import 'package:flashcard_desktop_app/src/navigation/app_navigation.dart';
+import 'package:flashcard_desktop_app/src/custom/data/abstract/auth_service.dart';
+import 'package:flashcard_desktop_app/src/navigation/route_generator.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 
@@ -19,25 +19,67 @@ class _LoginViewState extends State<LoginView> {
   WindowManagerWrapper get windowManager => GetIt.I.get<WindowManagerWrapper>(); 
 
   @override
+  void initState() {
+    super.initState();
+    textControllers["Email"]!.text = GetIt.I.get<AppConfigManager>().email!;
+    textControllers["Password"]!.text = GetIt.I.get<AppConfigManager>().password!;
+  }
+
+  void navigateToMain(){
+    Navigator.pushNamed(context, RouteGenerator.mainRoute);
+  }
+
+  Map<String, TextEditingController> textControllers = {
+    "Email" : TextEditingController(),
+    "Password" : TextEditingController(),
+  };
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FutureBuilder(
-        future: GetIt.I.get<AppAuthService>().authService.loginWithEmailAndPassword('arrowsmithalexander@gmail.com', '123456'),
-        builder: (context, snapshot)
-        {
-          if(!snapshot.hasData)
-          {
-            return const Center(child: CircularProgressIndicator());
-          }
-    
-          if(snapshot.hasError)
-          {
-            return Center(child: Text("There was a Login error: ${snapshot.error.toString()}"));
-          }
-    
-          return TextButton(onPressed: () => Navigator.pushNamed(context, AppNavigation.mainRoute), 
-          child: const Center(child: Text("Login successful")));
-        }),
+      body: Stack(
+        alignment: Alignment.center,
+        children: [
+
+        Column(children: [
+        Text("Welcome", style: Theme.of(context).textTheme.bodyMedium),
+
+        _buildTextField("Email"),
+        _buildTextField("Password"),
+        
+        TextButton(onPressed: () => login(), child: Text("Login"))
+      ]),
+
+      !isLoggingIn ? SizedBox.shrink() 
+      : Container(
+        color: Theme.of(context).primaryColor.withAlpha(150),
+        child: Center(child: CircularProgressIndicator()),
+      )
+
+
+      ]),
     );
+  }
+
+  Column _buildTextField(String textFieldName) {
+    return Column(children: [
+        Text(textFieldName),
+        TextField(controller: textControllers[textFieldName])
+      ]);
+  }
+
+  bool isLoggingIn = false;
+  Future<void> login() async {
+    setState(() {
+      isLoggingIn = true;
+    });
+
+    final success = await GetIt.I.get<AuthService>().loginWithEmailAndPassword(textControllers['Email']!.text, textControllers['Password']!.text);
+    
+    setState(() {
+      isLoggingIn = false;
+    });
+
+    if(success) navigateToMain();
   }
 }

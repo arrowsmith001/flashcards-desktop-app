@@ -6,7 +6,6 @@ import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 
-// TODO: Implement own resizing/window dragging method
 class WindowManagerWrapper with WindowListener
 {
 
@@ -52,11 +51,7 @@ class WindowManagerWrapper with WindowListener
   
   Future<void> dismissAndMakeInvisible() async {
      
-    final futures = <Future>[windowManager.blur(), windowManager.setOpacity(0), windowManager.setAlwaysOnBottom(true)]
-      
-      
-      
-      ;
+    final futures = <Future>[windowManager.blur(), windowManager.setOpacity(0), windowManager.setAlwaysOnBottom(true)];
 
       await Future.wait(futures); 
   }

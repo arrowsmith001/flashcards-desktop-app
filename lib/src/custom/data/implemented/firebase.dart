@@ -1,12 +1,13 @@
 
 
 import 'package:firedart/firedart.dart';
+import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
 
-import '../../custom/data/auth_service.dart';
-import 'database_service.dart';
-import 'serializable.dart';
+import '../abstract/auth_service.dart';
+import '../abstract/database_service.dart';
+import '../abstract/entity.dart';
 
-class FirebaseDatabaseService<T extends Serializable> implements DatabaseService<T>
+class FirebaseDatabaseService<T extends Entity> implements DatabaseService<T>
 {
   FirebaseDatabaseService(this.collectionName, this.deserializeDocument);
   final String collectionName;
@@ -22,6 +23,7 @@ class FirebaseDatabaseService<T extends Serializable> implements DatabaseService
   Future<List<T>> fetchAll() async {
     final docs = await collection.get();
     return docs.map<T>(_documentToObject).toList();
+
   }
   
   @override
@@ -36,9 +38,9 @@ class FirebaseDatabaseService<T extends Serializable> implements DatabaseService
   }
   
   @override
-  Future<bool> add(T item) async {
-    await collection.add(item.serialized());
-    return true;
+  Future<String?> add(T item) async {
+    final doc = await collection.add(item.serialized());
+    return doc.id;
   }
   
   @override
@@ -58,6 +60,11 @@ class FirebaseDatabaseService<T extends Serializable> implements DatabaseService
   Stream<T> streamById(String id) {
     return collection.document(id).stream.map((doc) => _documentToObject(doc!));
   }
+  
+  @override
+  Future<void> setField(String itemId, String fieldName, dynamic value) {
+    return collection.document(itemId).update({fieldName : value});
+  }
 
 }
 
@@ -68,7 +75,12 @@ class FirebaseAuthService implements AuthService {
     try
     {
       final firebaseUser = await FirebaseAuth.instance.signIn(email, password);
-    }catch(e){}
+    }on Exception catch(e){
+
+      AppLogger.log(e.toString());
+      return false;
+
+    }
 
     return true;
 
@@ -76,7 +88,7 @@ class FirebaseAuthService implements AuthService {
 
 }
 
-class FirebaseLiteDatabaseService<T extends Serializable> extends FirebaseDatabaseService<T> {
+class FirebaseLiteDatabaseService<T extends Entity> extends FirebaseDatabaseService<T> {
   FirebaseLiteDatabaseService(super.collectionName, super.deserializeDocument);
   
   @override

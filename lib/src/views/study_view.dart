@@ -4,16 +4,17 @@ import 'dart:math';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
-import 'package:flashcard_desktop_app/src/navigation/app_navigation.dart';
+import 'package:flashcard_desktop_app/src/navigation/route_generator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firedart/firedart.dart';
-import 'package:flashcard_desktop_app/src/model/flashcard.dart';
+import 'package:flashcard_desktop_app/src/model/entities/flashcard.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:get_it/get_it.dart';
 import 'package:logger/logger.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 
+import '../model/entities/flashcard_result.dart';
 import '../window/app_window_manager.dart';
 
 Logger logger = Logger();
@@ -98,7 +99,7 @@ class _StudyViewState extends State<StudyView> {
     final r = Random();
     final flashcard = flashcardsToDo[r.nextInt(flashcardsToDo.length)];
 
-    final result = await Navigator.pushNamed<bool>(context, AppNavigation.flashcardRoute, arguments: {'flashcard' : flashcard.serialized()});
+    final result = await Navigator.pushNamed<bool>(context, RouteGenerator.flashcardRoute, arguments: {'flashcard' : flashcard.serialized()});
 
     await windowManager.setDefaultSizeAndPosition();
     await windowManager.blur();
@@ -108,7 +109,7 @@ class _StudyViewState extends State<StudyView> {
     if(result != null)
     {
       flashcardsToDo.remove(flashcard);
-      flashcardsResults.add(FlashcardResult(null, flashcard, result, DateTime.now()));
+      flashcardsResults.add(FlashcardResult(null, flashcard.id!, result, DateTime.now()));
     }
     
     initTimer();
@@ -141,8 +142,8 @@ class _StudyViewState extends State<StudyView> {
       List<Future> futures = [];
       for(var id in widget.flashcardDirectoryIds)
       {
-        futures.add(Firestore.instance.collection('flashcards').where('directoryId', isEqualTo: id).get()
-        .then((value) => flashcardsToDo.addAll(value.map((e) => Flashcard(e.id, e['prompt'], e['response'])))));
+        // futures.add(Firestore.instance.collection('flashcards').where('directoryId', isEqualTo: id).get()
+        // .then((value) => flashcardsToDo.addAll(value.map((e) => Flashcard(e.id, e['prompt'], e['response'])))));
       }
       await Future.wait(futures);
       logger.d("${flashcardsToDo.length} flashcards loaded");
@@ -251,8 +252,8 @@ ScrollController _scrollController = ScrollController();
                           ], rows: 
                               flashcardsResults.map((r) {
                             return DataRow(cells: [
-                                DataCell(Text(r.flashcard.prompt, softWrap: true)),
-                                DataCell(Text(r.flashcard.response, softWrap: true)),
+                                //DataCell(Text(r.flashcard.prompt, softWrap: true)),
+                                //DataCell(Text(r.flashcard.response, softWrap: true)),
                                 DataCell(r.correct ? Icon(Icons.thumb_up, color: Colors.green) : Icon(Icons.thumb_down, color: Colors.red)),
                                 DataCell(Text(r.timestamp.toString(), softWrap: true)),
                             ]);

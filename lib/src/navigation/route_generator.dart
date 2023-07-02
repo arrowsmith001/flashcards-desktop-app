@@ -1,4 +1,4 @@
-import 'package:flashcard_desktop_app/src/model/flashcard.dart';
+import 'package:flashcard_desktop_app/src/model/entities/flashcard.dart';
 import 'package:flashcard_desktop_app/src/views/flashcard_directories_listing_view.dart';
 import 'package:flashcard_desktop_app/src/views/flashcard_view.dart';
 import 'package:flashcard_desktop_app/src/views/main_view.dart';
@@ -11,7 +11,7 @@ import 'package:get_it/get_it.dart';
 import '../views/login_view.dart';
 
 
-class AppNavigation {
+class RouteGenerator {
 
   static const String entryRoute = '/';
   static const String mainRoute = '/main';

@@ -1,8 +1,10 @@
 
-import 'serializable.dart';
+import 'dart:collection';
+
+import 'entity.dart';
 
 
-abstract class DatabaseService<T extends Serializable> 
+abstract class DatabaseService<T extends Entity> 
 {
   Future<List<T>> fetchAll();
   Future<T> fetchById(String id);
@@ -12,7 +14,8 @@ abstract class DatabaseService<T extends Serializable>
 
   Stream<T> streamById(String id);
 
-  Future<bool> add(T item);
-}
+  Future<String?> add(T item);
 
+  Future<void> setField(String itemId, String fieldName, value);
+}
 

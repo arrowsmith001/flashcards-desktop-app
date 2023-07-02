@@ -5,16 +5,16 @@ import 'dart:convert';
 
 import 'package:firedart/firedart.dart';
 import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
-import 'package:flashcard_desktop_app/src/navigation/app_navigation.dart';
+import 'package:flashcard_desktop_app/src/navigation/route_generator.dart';
 import 'package:flashcard_desktop_app/src/services/app_database_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_treeview/flutter_treeview.dart';
 import 'package:get_it/get_it.dart';
 
-import '../model/flashcard.dart';
+import '../custom/data/abstract/database_service.dart';
+import '../model/entities/deck.dart';
+import '../model/entities/flashcard.dart';
 import '../window/app_window_manager.dart';
-
-//TODO: TREE STRUCTURE FFS
 
 class FlashcardDirectoriesListingView extends StatefulWidget {
   const FlashcardDirectoriesListingView({super.key});
@@ -25,9 +25,19 @@ class FlashcardDirectoriesListingView extends StatefulWidget {
 
 class _FlashcardDirectoriesListingViewState extends State<FlashcardDirectoriesListingView> {
 
+  bool isLoading = true;
+
+  DeckService flashcardDirectoryService = GetIt.I.get<DeckService>();
+
+  @override
+  void initState() async {
+    super.initState();
+    await flashcardDirectoryService.getAllDecks();
+    }
+
   WindowManagerWrapper get windowManager => GetIt.I.get<WindowManagerWrapper>(); 
 
-List<String> selectedDirectoryIds = [];
+  List<String> selectedDirectoryIds = [];
 
   @override
   Widget build(BuildContext context) {
@@ -37,24 +47,24 @@ List<String> selectedDirectoryIds = [];
         title: const Text("Browse Decks", style: TextStyle(color: Colors.black)),
       shadowColor: const Color.fromARGB(0, 0, 0, 0),),
       body: FutureBuilder(
-        future: GetIt.I.get<AppDataStore>().databaseService.flashcardDirectoryService.fetchAll(),
+        future: GetIt.I.get<DeckService>().getAllDecks(),
         builder: (context, snapshot)
         {
           if(!snapshot.hasData) return const Center(child: CircularProgressIndicator());
           if(snapshot.hasError) return const Center(child: Text("There was an error"));
     
           final data = snapshot.data!;
-          final node = buildTree(data, (dir) => dir.path);
-          final _treeController = TreeViewController(children: node.children, selectedKey: '');
+          //final node = buildTree(data, (dir) => dir.path);
+          //final _treeController = TreeViewController(children: node.children, selectedKey: '');
 
           return Column(children: [
 
             Expanded(
               child: TreeView(
-                controller: _treeController,
+                controller: TreeViewController(), // _treeController,
                   nodeBuilder: (context, node)
                   {
-                    final FlashcardDirectory? data = node.data;
+                    final Deck? data = node.data;
                     if(data != null)
                     {
                       return ListTile(
@@ -94,7 +104,7 @@ List<String> selectedDirectoryIds = [];
   }
 
   void onBeginStudy(context) {
-    Navigator.pushNamed(context, AppNavigation.studyRoute, arguments : {'flashcardDirectoryIds' : selectedDirectoryIds});
+    Navigator.pushNamed(context, RouteGenerator.studyRoute, arguments : {'flashcardDirectoryIds' : selectedDirectoryIds});
   }
 
 

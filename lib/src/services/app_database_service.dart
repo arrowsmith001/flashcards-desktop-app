@@ -2,17 +2,23 @@
 
 
 import 'package:firedart/firedart.dart';
-import 'package:flashcard_desktop_app/src/custom/data/auth_service.dart';
-import 'package:flashcard_desktop_app/src/model/flashcard.dart';
-import 'package:flashcard_desktop_app/src/custom/data/database_service.dart';
+import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
+import 'package:flashcard_desktop_app/src/custom/data/abstract/auth_service.dart';
+import 'package:flashcard_desktop_app/src/model/entities/deck_collection.dart';
+import 'package:flashcard_desktop_app/src/model/entities/flashcard.dart';
+import 'package:flashcard_desktop_app/src/custom/data/abstract/database_service.dart';
 import 'package:get_it/get_it.dart';
 
 import '../classes/app_config.dart';
-import '../custom/data/firebase.dart';
+import '../custom/data/abstract/entity_service.dart';
+import '../custom/data/abstract/store.dart';
+import '../custom/data/implemented/firebase.dart';
+import '../model/entities/deck.dart';
+import '../model/entities/user.dart';
 
 
 
-class AppFirebaseService implements AppDatabaseService, AppAuthService
+class FlashcardAppFirebaseServices
 {
   Future<void> initialize(AppConfigManager config) async
   {
@@ -20,40 +26,51 @@ class AppFirebaseService implements AppDatabaseService, AppAuthService
     Firestore.initialize(config.projectId!);
   }
 
-  @override
-  DatabaseService<FlashcardDirectory> flashcardDirectoryService = FirebaseLiteDatabaseService('flashcardDirectories', FlashcardDirectory.deserialize);
-
-  @override
-  DatabaseService<Flashcard> flashcardService = FirebaseLiteDatabaseService('flashcards', Flashcard.deserialize);
+  DatabaseService<User> userService = FirebaseDatabaseService('users', User.deserialize);
+  DatabaseService<Flashcard> flashcardService = FirebaseDatabaseService('flashcards', Flashcard.deserialize);
+  DatabaseService<Deck> deckService = FirebaseDatabaseService('decks', Deck.deserialize);
+  DatabaseService<DeckCollection> deckCollectionService = FirebaseDatabaseService('deckCollections', DeckCollection.deserialize);
   
-  @override
   AuthService get authService => FirebaseAuthService();
   
+}
+
+class DeckService extends EntityService<Deck>
+{
+  DeckService(super.entityStore);
+  
+    Future<List<Deck>> getAllDecks() {
+    return entityStore.getAll();
+  }
+  
+  Future<bool> addFlashcardDirectory(Deck item) => entityStore.addItem(item);
 
 }
 
-class AppDataStore
+class DeckCollectionService extends EntityService<DeckCollection>
 {
-  AppDataStore(this.databaseService);
-  final AppDatabaseService databaseService;
-
-  List<FlashcardDirectory> getAllFlashcardDirectories(){
-    throw UnimplementedError(); // TODO: Implement with cache
+  DeckCollectionService(super.entityStore);
+  
+    Future<DeckCollection> getCollectionById(String id) {
+    return entityStore.getItemById(id);
   }
 
+  void setPathsToDecks(String? id, Map map) {
+    entityStore.setField(id!, 'pathsToDeckIds', map);
+  }
   
 }
 
-abstract class AppDatabaseService 
+class FlashcardService extends EntityService<Flashcard>
 {
-  AppDatabaseService(this.flashcardDirectoryService, this.flashcardService);
+  FlashcardService(super.entityStore);
 
-  final DatabaseService<FlashcardDirectory> flashcardDirectoryService;
-  final DatabaseService<Flashcard> flashcardService;
+  Future<List<Flashcard>> getAllFlashcardsByDirectoryId(String parentDirectoryId) async {
+    // TODO:  somehow refer to cached items and be as efficient in querying as possible
+    return entityStore.getItemsByField('parentId', parentDirectoryId);
+  }
+  
+  Future<bool> addFlashcard(Flashcard item) => entityStore.addItem(item);
+  
 }
 
-
-abstract class AppAuthService {
-  AppAuthService(this.authService);
-  final AuthService authService;
-}
