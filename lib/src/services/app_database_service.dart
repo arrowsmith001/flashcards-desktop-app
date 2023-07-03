@@ -7,6 +7,7 @@ import 'package:flashcard_desktop_app/src/custom/data/abstract/auth_service.dart
 import 'package:flashcard_desktop_app/src/model/entities/deck_collection.dart';
 import 'package:flashcard_desktop_app/src/model/entities/flashcard.dart';
 import 'package:flashcard_desktop_app/src/custom/data/abstract/database_service.dart';
+import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 
 import '../classes/app_config.dart';
@@ -35,6 +36,31 @@ class FlashcardAppFirebaseServices
   
 }
 
+// TODO: Stream user and make it fundamental to the apps state
+class UserService extends EntityService<User>
+{
+  UserService(super.entityStore);
+  
+  ValueNotifier<User?> currentUser = ValueNotifier(null);
+
+  Future<User?> getUserById(String id)
+  {
+    return entityStore.getItemById(id);
+  }
+
+  void setCurrentUser(User user) {
+    currentUser.value = user;
+  }
+
+  User? getCurrentUser() => currentUser.value;
+
+  Stream<User> streamCurrentUser(){
+    return entityStore.streamItemById(currentUser.value!.id!)!;
+  }
+  
+
+}
+
 class DeckService extends EntityService<Deck>
 {
   DeckService(super.entityStore);
@@ -43,7 +69,7 @@ class DeckService extends EntityService<Deck>
     return entityStore.getAll();
   }
   
-  Future<bool> addFlashcardDirectory(Deck item) => entityStore.addItem(item);
+  Future<Deck?> addFlashcardDirectory(Deck item) => entityStore.createItem(item);
 
 }
 
@@ -51,12 +77,16 @@ class DeckCollectionService extends EntityService<DeckCollection>
 {
   DeckCollectionService(super.entityStore);
   
-    Future<DeckCollection> getCollectionById(String id) {
+    Future<DeckCollection?> getCollectionById(String id) {
     return entityStore.getItemById(id);
   }
 
   void setPathsToDecks(String? id, Map map) {
     entityStore.setField(id!, 'pathsToDeckIds', map);
+  }
+
+  Future<List<DeckCollection>> getCollectionsById(List<String> collections) {
+    return entityStore.getItemsById(collections);
   }
   
 }
@@ -70,7 +100,7 @@ class FlashcardService extends EntityService<Flashcard>
     return entityStore.getItemsByField('parentId', parentDirectoryId);
   }
   
-  Future<bool> addFlashcard(Flashcard item) => entityStore.addItem(item);
+  Future<Flashcard?> addFlashcard(Flashcard item) => entityStore.createItem(item);
   
 }
 

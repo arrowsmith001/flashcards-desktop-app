@@ -33,7 +33,7 @@ class FirebaseDatabaseService<T extends Entity> implements DatabaseService<T>
   }
   
   @override
-  Future<List<T>> fetchByIds(List<String> ids) {
+  Future<List<T>> fetchByIds(Iterable<String> ids) {
     return Future.wait(ids.map((id) => fetchById(id)));
   }
   
@@ -50,7 +50,7 @@ class FirebaseDatabaseService<T extends Entity> implements DatabaseService<T>
   }
   
   @override
-  Future<Map<String, List<T>>> fetchWhereMultiple(String field, List<String> values) async {
+  Future<Map<String, List<T>>> fetchWhereMultiple(String field, Iterable<String> values) async {
     
     final lists = await Future.wait(values.map((value) => fetchWhere(field, value).then((results) => MapEntry(value, results))));
     return Map.fromEntries(lists);
@@ -70,21 +70,22 @@ class FirebaseDatabaseService<T extends Entity> implements DatabaseService<T>
 
 class FirebaseAuthService implements AuthService {
 
+  final auth = FirebaseAuth.instance;
+
   @override
-  Future<bool> loginWithEmailAndPassword(String email, String password) async {
-    try
-    {
-      final firebaseUser = await FirebaseAuth.instance.signIn(email, password);
-    }on Exception catch(e){
-
-      AppLogger.log(e.toString());
-      return false;
-
-    }
-
-    return true;
-
+  Future<void> loginWithEmailAndPassword(String email, String password) async {
+    
+    final firebaseUser = await auth.signIn(email, password);
+    
   }
+  
+  @override
+  Future<String?> getLoggedInId() async {
+    return (await isLoggedIn()) ? auth.userId : null;
+  }
+  
+  @override
+  Future<bool> isLoggedIn() async => auth.isSignedIn;
 
 }
 

@@ -3,13 +3,15 @@ import 'package:flutter/material.dart';
 
 class MinimalTheme {
 
-  static Color offWhite = Color.fromARGB(255, 207, 207, 207);
+  static Color backgroundDark = Color.fromARGB(255, 196, 196, 196);
 
   static ThemeData theme = ThemeData(
+    scaffoldBackgroundColor: Colors.transparent,
+    shadowColor: backgroundDark,
     colorScheme: ColorScheme.light(
-      
-      background: offWhite,
-      primary: Color.fromARGB(255, 207, 207, 207)));
+
+      background: Color.fromARGB(255, 255, 255, 255),
+      primary: Color.fromARGB(255, 43, 195, 255)));
 
 
 /*     static ColorScheme appColorScheme = ColorScheme(

@@ -31,19 +31,29 @@ class RouteGenerator {
             },
             transitionsBuilder: (_, Animation<double> animation, Animation<double> second, Widget child) {
               
+              final double windowHeight = GetIt.I.get<WindowManagerWrapper>().windowSize.height; 
+
               CurvedAnimation curvedIn = CurvedAnimation(parent: animation, curve: Curves.decelerate);
               CurvedAnimation curvedOut = CurvedAnimation(parent: second, curve: Curves.decelerate);
 
-              
+              return FadeTransition(
+                  opacity: curvedIn,
+                  child: FadeTransition(
+                    opacity: Tween<double>(begin: 1.0, end: 0.0).animate(curvedOut),
+                    child: Transform.scale(
+                      scale: 1 + curvedOut.value,
+                      child: child,
+                    )));
+                    
               return Scaffold(
                 body: FadeTransition(
                   opacity: curvedIn,
                   child: FadeTransition(
                     opacity: Tween<double>(begin: 1.0, end: 0.0).animate(curvedOut),
                     child: Transform.translate(
-                      offset: Offset(500*(1-curvedIn.value),0),
+                      offset: Offset(0, windowHeight*(1-curvedIn.value)),
                       child: Transform.translate(
-                        offset: Offset(500*curvedOut.value,0),
+                        offset: Offset(0, windowHeight*curvedOut.value),
                         child: child),
                     ),
                   )),
@@ -58,7 +68,8 @@ class RouteGenerator {
           transitionDuration: const Duration(milliseconds: 500),
             pageBuilder: (BuildContext context,Animation<double> animation,
                 Animation<double> secondaryAnimation){
-              return const MainView();
+
+              return MainView();
             },
             transitionsBuilder: (_, Animation<double> animation, Animation<double> second, Widget child) {
               
@@ -73,9 +84,9 @@ class RouteGenerator {
                   child: FadeTransition(
                     opacity: Tween<double>(begin: 1.0, end: 0.0).animate(curvedOut),
                     child: Transform.translate(
-                      offset: Offset(windowWidth*(1-curvedIn.value),0),
+                      offset: Offset(-windowWidth*(1-curvedIn.value),0),
                       child: Transform.translate(
-                        offset: Offset(windowWidth*curvedOut.value,0),
+                        offset: Offset(-windowWidth*curvedOut.value,0),
                         child: child),
                     ),
                   )),

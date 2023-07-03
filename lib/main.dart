@@ -15,6 +15,7 @@ import 'src/app.dart';
 import 'src/custom/data/abstract/store.dart';
 import 'src/model/entities/deck.dart';
 import 'src/model/entities/deck_collection.dart';
+import 'src/model/entities/user.dart';
 
 GetIt get g => GetIt.I;
 
@@ -24,9 +25,7 @@ void main() async {
 
   await configureDependencyInjection();
 
-  await g.get<WindowManagerWrapper>().initialize();
-
-  //runApp(MyApp());
+  runApp(MyApp());
 }
 
 Future<void> configureDependencyInjection() async
@@ -66,7 +65,7 @@ void firebase() async {
       final int i = rand.nextInt(paths.length);
       map.addAll({d.id : paths[i]});
   }
-  colService.setPathsToDecks(col.id, map);
+  colService.setPathsToDecks(col!.id, map);
 }
 
 void configureAuth() {
@@ -79,6 +78,9 @@ void configureAuth() {
 }
 
 void configureDataServices() {
+
+  g.registerLazySingleton<UserService>(() 
+    => UserService(g.get<Store<User>>()));
 
   g.registerLazySingleton<FlashcardService>(() 
     => FlashcardService(g.get<Store<Flashcard>>()));
@@ -93,6 +95,9 @@ void configureDataServices() {
 
 void configureDataStores() {
 
+  g.registerLazySingleton<Store<User>>(() 
+    => Store<User>(g.get<DatabaseService<User>>()));
+
   g.registerLazySingleton<Store<Flashcard>>(() 
     => Store<Flashcard>(g.get<DatabaseService<Flashcard>>()));
 
@@ -104,6 +109,12 @@ void configureDataStores() {
 }
 
 void configureDatabaseServices() {
+    
+  g.registerLazySingleton<DatabaseService<User>>(() 
+    {
+      final firebaseServices = g.get<FlashcardAppFirebaseServices>();
+      return firebaseServices.userService;
+    });
     
   g.registerLazySingleton<DatabaseService<Flashcard>>(() 
     {
@@ -132,7 +143,12 @@ void configureDatabaseServices() {
     }, dependsOn: [AppConfigManager]);
 }
 
-void configureWindowManager() => g.registerSingletonAsync<WindowManagerWrapper>(() async => WindowManagerWrapper());
+void configureWindowManager() => g.registerSingletonAsync<WindowManagerWrapper>(() async 
+{
+  final wm = WindowManagerWrapper();
+  await wm.initialize();
+  return wm;
+});
 
 void configureAppConfig() {
   return g.registerSingletonAsync<AppConfigManager>(() async {

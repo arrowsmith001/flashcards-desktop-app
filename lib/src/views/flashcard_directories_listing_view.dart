@@ -5,6 +5,8 @@ import 'dart:convert';
 
 import 'package:firedart/firedart.dart';
 import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
+import 'package:flashcard_desktop_app/src/custom/widgets/card_window.dart';
+import 'package:flashcard_desktop_app/src/model/entities/deck_collection.dart';
 import 'package:flashcard_desktop_app/src/navigation/route_generator.dart';
 import 'package:flashcard_desktop_app/src/services/app_database_service.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +16,7 @@ import 'package:get_it/get_it.dart';
 import '../custom/data/abstract/database_service.dart';
 import '../model/entities/deck.dart';
 import '../model/entities/flashcard.dart';
+import '../model/entities/user.dart';
 import '../window/app_window_manager.dart';
 
 class FlashcardDirectoriesListingView extends StatefulWidget {
@@ -27,13 +30,8 @@ class _FlashcardDirectoriesListingViewState extends State<FlashcardDirectoriesLi
 
   bool isLoading = true;
 
-  DeckService flashcardDirectoryService = GetIt.I.get<DeckService>();
+  DeckService deckService = GetIt.I.get<DeckService>();
 
-  @override
-  void initState() async {
-    super.initState();
-    await flashcardDirectoryService.getAllDecks();
-    }
 
   WindowManagerWrapper get windowManager => GetIt.I.get<WindowManagerWrapper>(); 
 
@@ -42,65 +40,124 @@ class _FlashcardDirectoriesListingViewState extends State<FlashcardDirectoriesLi
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: const Text("Browse Decks", style: TextStyle(color: Colors.black)),
-      shadowColor: const Color.fromARGB(0, 0, 0, 0),),
-      body: FutureBuilder(
-        future: GetIt.I.get<DeckService>().getAllDecks(),
-        builder: (context, snapshot)
-        {
-          if(!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-          if(snapshot.hasError) return const Center(child: Text("There was an error"));
-    
-          final data = snapshot.data!;
-          //final node = buildTree(data, (dir) => dir.path);
-          //final _treeController = TreeViewController(children: node.children, selectedKey: '');
 
-          return Column(children: [
+      body: Column(
+        children: [
 
-            Expanded(
-              child: TreeView(
-                controller: TreeViewController(), // _treeController,
-                  nodeBuilder: (context, node)
-                  {
-                    final Deck? data = node.data;
-                    if(data != null)
-                    {
-                      return ListTile(
-                        onTap: () => toggleDirectorySelected(data.id!),
-                        title: Text(node.label), trailing: Checkbox(
-                        value: selectedDirectoryIds.contains(data.id),
-                        onChanged: (value) {
-                          toggleDirectorySelected(data.id!);
-                      }));
-                    }
-                    return ListTile(title: Text(node.label));
-            
-                  },
-                  
-                  ),
-            ),
+          Flexible(flex: 1, child: Container(),),
 
-            selectedDirectoryIds.isEmpty ? Container()
-           : Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-            Padding(
-             padding: const EdgeInsets.all(8.0),
-             child: TextButton(onPressed:() => onBeginStudy(context), 
-             child: Container(
-              height: 45,
-              width: 150,
-              child: Center(child: Text('Begin Study (${selectedDirectoryIds.length})')))),
-           )
-           ],)
+          Flexible(flex: 5,
+            child: Row(children: 
+            [
+              Flexible(flex: 1, child: Container()),
+          
+              Flexible(flex: 6, child: _buildDeckBrowser(context)),
+               
+              Flexible(flex: 6,
+                child: Column(children: [
+                  Expanded(child: CardWindow(child: Container())),
+                  Expanded(child: CardWindow(child: Container())),
+                 ],),
+              ),
+          
+              Flexible(flex: 1, child: Container()),
+            ]),
+          ),
 
-          ]);
-    
-    
-        }),
+          
+          Flexible(flex: 1, child: Container(),),
+        ],
+      ),
     );
+  }
+
+  CardWindow _buildDeckBrowser(BuildContext context) => 
+    CardWindow(child: 
+      StreamBuilder(
+        stream: GetIt.I.get<UserService>().streamCurrentUser(),
+        builder: 
+      (context, snapshot) 
+      {
+        if(!snapshot.hasData) return CircularProgressIndicator();
+        if(snapshot.hasError) return Text(snapshot.error.toString());
+
+        final User user = snapshot.data!;
+        final collections = user.deckCollectionIds;
+        
+        return _buildDeckCollectionList(context, collections);
+
+    }));
+
+    
+  Widget _buildDeckCollectionList(BuildContext context, List<String> collections) 
+  {
+      return FutureBuilder<List<DeckCollection>>(
+        future: GetIt.I.get<DeckCollectionService>().getCollectionsById(collections),
+        builder: ((context, snapshot) {
+
+      if(!snapshot.hasData) return CircularProgressIndicator();
+      if(snapshot.hasError) return Text(snapshot.error.toString());
+
+            return ListView(
+              children: 
+              snapshot.data!.map((e) => ListTile(title: Text(e.name!))).toList());
+        }));
+  }
+
+  FutureBuilder<Object?> _oldBody() {
+    return FutureBuilder(
+      builder: (context, snapshot)
+      {
+        if(!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+        if(snapshot.hasError) return const Center(child: Text("There was an error"));
+  
+/*           final data = snapshot.data!;
+        final node = buildTree(data, (dir) => dir.path);
+        final _treeController = TreeViewController(children: node.children, selectedKey: ''); */
+
+        return Column(children: [
+
+          Expanded(
+            child: TreeView(
+              controller: TreeViewController(), // _treeController,
+                nodeBuilder: (context, node)
+                {
+                  final Deck? data = node.data;
+                  if(data != null)
+                  {
+                    return ListTile(
+                      onTap: () => toggleDirectorySelected(data.id!),
+                      title: Text(node.label), trailing: Checkbox(
+                      value: selectedDirectoryIds.contains(data.id),
+                      onChanged: (value) {
+                        toggleDirectorySelected(data.id!);
+                    }));
+                  }
+                  return ListTile(title: Text(node.label));
+          
+                },
+                
+                ),
+          ),
+
+          selectedDirectoryIds.isEmpty ? Container()
+         : Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+          Padding(
+           padding: const EdgeInsets.all(8.0),
+           child: TextButton(onPressed:() => onBeginStudy(context), 
+           child: Container(
+            height: 45,
+            width: 150,
+            child: Center(child: Text('Begin Study (${selectedDirectoryIds.length})')))),
+         )
+         ],)
+
+        ]);
+  
+  
+      });
   }
 
   void onBeginStudy(context) {
@@ -162,6 +219,7 @@ Node<T> convertToImmutableTree<T>(AddableTreeNode<T> addableNode) {
             else selectedDirectoryIds.remove(id);
           });
   }
+  
   
   
 

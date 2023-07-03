@@ -14,6 +14,7 @@ import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'custom/views/windows/surrounded_app_window.dart';
+import 'custom/widgets/gradient_background_widget.dart';
 import 'navigation/route_generator.dart';
 
 
@@ -23,7 +24,6 @@ class MyApp extends StatelessWidget {
 
   ValueNotifier<ThemeData> themeNotifier = ValueNotifier(MinimalTheme.theme);
 
-
   @override
   Widget build(BuildContext context) {
 
@@ -32,15 +32,25 @@ class MyApp extends StatelessWidget {
     builder: (_, theme, __) { 
         return Provider<ValueNotifier<ThemeData>>(
           create: (_) => themeNotifier,
-          child: MaterialApp(
-              theme: theme,
-              onGenerateRoute: RouteGenerator.generateRoute,
-              initialRoute: '/'),
+          child: _buildFlexiblyThemedApp(theme),
         );
      },
   );
   }
 
-}
+  Widget _buildFlexiblyThemedApp(ThemeData theme) {
 
+    return GradientBackgroundWidget(
+      theme: theme, 
+      child: _buildApp(theme));
+  }
+
+  MaterialApp _buildApp(ThemeData theme) {
+    return MaterialApp(
+            theme: theme,
+            onGenerateRoute: RouteGenerator.generateRoute,
+            initialRoute: '/');
+  }
+
+}
 

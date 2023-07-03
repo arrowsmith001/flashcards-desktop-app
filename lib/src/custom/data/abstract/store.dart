@@ -1,83 +1,118 @@
+import 'dart:async';
 import 'dart:collection';
 
 import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
 import 'package:flashcard_desktop_app/src/model/entities/flashcard.dart';
+import 'package:flutter/material.dart';
 
 import 'database_service.dart';
 import 'entity.dart';
 
 class Store<T extends Entity>
 {
+  
   Store(this.databaseService, {Iterable<T>? initialItems})
   {
     if(initialItems != null && initialItems.isNotEmpty)
     {
-      itemIdsToItems.addAll(Map<String, T>.fromIterable(initialItems, key: (item) => item.id));
+      cache.cacheAll(initialItems);
     }
   }
 
-  final DatabaseService<T> databaseService;
-  final HashMap<String, T> itemIdsToItems = HashMap();
+  Cache<T> cache = Cache();
 
-  Future<T> getItemById(String id) async
-  {
-    if(itemIdsToItems.containsKey(id)) return itemIdsToItems[id]!;
-    else {
-      final T item = await databaseService.fetchById(id);
-      itemIdsToItems.addAll({id : item});
+  final DatabaseService<T> databaseService;
+
+  Stream<T>? streamItemById(String id){
+    return databaseService.streamById(id)?.map((item) {
+      cache.cache(item);
       return item;
-    }
+    });
+     
+  }
+
+
+  Future<T?> getItemById(String id) async
+  {
+    if(cache.contains(id)) return cache.get(id)!;
+    final T? entity = await databaseService.fetchById(id);
+    if(entity == null) return null;
+    cache.cache(entity);
+    return entity;
   }
 
   Future<List<T>> getAll() async
   {
     final fetchedItems = await databaseService.fetchAll();
-    _updateMap(fetchedItems);
+    cache.cacheAll(fetchedItems);
     return fetchedItems;
   }
 
   Future<List<T>> getItemsByField(String fieldName, String fieldValue) async {
     
     final fetchedItems = await databaseService.fetchWhere(fieldName, fieldValue);
-    _updateMap(fetchedItems); 
+    cache.cacheAll(fetchedItems);
     return fetchedItems;
   }
 
-  Future<bool> addItem(T item) async {
+  Future<T?> createItem(T item) async {
     
     final id = await databaseService.add(item);
     if(id != null){
       item.id = id;
-      _updateMap([item]);
-      return true;
+      cache.cache(item);
+      return item;
     }
-    return false;
+    return null;
   }
   
-  void _updateMap(List<T> newItems) {
-    int numberOfUpdates = 0;
-    int numberAdded = 0;
-    for(var item in newItems)
-    {
-      if(!itemIdsToItems.containsKey(item.id)){
-        itemIdsToItems.addAll({item.id! : item});
-        numberAdded++;
-      }
-      else
-      {
-        final existingItem = itemIdsToItems[item.id]!;
-        if(!existingItem.isEqualTo(item))
-        {
-          itemIdsToItems.update(item.id!, (value) => item);
-          numberOfUpdates++;
-        }
-      }
-    }
-    AppLogger.log('${newItems.length} items: $numberAdded new adds, $numberOfUpdates local updates');
+
+
+  void setField(String itemId, String fieldName, dynamic value) async {
+    await databaseService.setField(itemId, fieldName, value);
+    final updatedItem = await databaseService.fetchById(itemId);
+    cache.cache(updatedItem);
   }
 
-  void setField(String itemId, String fieldName, dynamic value) {
-    databaseService.setField(itemId, fieldName, value);
+  Future<List<T>> getItemsById(List<String> itemIds) async {
+    final cachedItems = cache.getAsMany(itemIds);
+    final cachedItemIds = cachedItems.map((e) => e.id);
+
+    final uncachedItems = await databaseService.fetchByIds(itemIds.where((element) => !cachedItemIds.contains(element)));
+    cache.cacheAll(uncachedItems);
+
+    cachedItems.addAll(uncachedItems);
+    return cachedItems;
+  }
+}
+
+class Cache<T extends Entity> 
+{
+
+  final HashMap<String, T> itemIdsToItems = HashMap();
+
+  T? get(String id){
+    return itemIdsToItems[id];
+  }
+
+  bool contains(String id) => itemIdsToItems.containsKey(id);
+
+  void cache(T? entity){
+    if(entity == null || entity.id == null) return;
+    if(contains(entity.id!)) itemIdsToItems.update(entity.id!, (_) => entity);
+    else itemIdsToItems.addAll({entity.id! : entity});
+  }
+  
+  void cacheAll(Iterable<T> entities) {
+    for(var entity in entities)
+    {
+      cache(entity);
+    }
+  }
+  
+  List<T> getAsMany(List<String> itemIds) {
+    return itemIds.where((element) => contains(element))
+      .map((e) => get(e)!).toList();
   }
 }
 

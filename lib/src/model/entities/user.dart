@@ -5,7 +5,11 @@ class User extends Entity {
   final String name;
   final List<String> deckCollectionIds;
 
-  static User deserialize(Map<String, dynamic> map) => User(map['id'], map['name'], map['deckCollectionIds']);
+  static User deserialize(Map<String, dynamic> map) 
+    => User(
+      map['id'], 
+      map['name'], 
+      (map['deckCollectionIds'] as List).map((e) => e.toString()).toList());
 
   User(super.id, this.name, this.deckCollectionIds);
   

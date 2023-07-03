@@ -8,4 +8,5 @@ abstract class Entity {
   bool isEqualTo(Entity other){
     return id == other.id;
   } 
+
 }
