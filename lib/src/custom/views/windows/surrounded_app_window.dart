@@ -1,6 +1,5 @@
 import 'package:flashcard_desktop_app/src/window/app_window_manager.dart';
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
 
 class SurroundedAppWindow extends StatefulWidget {
@@ -15,7 +14,6 @@ class SurroundedAppWindow extends StatefulWidget {
 
 class _SurroundedAppWindowState extends State<SurroundedAppWindow> {
   Widget get child  => widget.child ?? Container();
-  WindowManagerWrapper get windowManager => GetIt.I.get<WindowManagerWrapper>();
 
   @override
   void initState() {
@@ -117,17 +115,17 @@ class _SurroundedAppWindowState extends State<SurroundedAppWindow> {
   
 
   void onMinimize() {
-    windowManager.minimize();
+   // windowManager.minimize();
   }
   void onMaximize() {
-    windowManager.maximize();
+   // windowManager.maximize();
   }
   void onClose() {
-    windowManager.close();
+    //windowManager.close();
   }
   
   Future<void> startDragging() async {
-    await windowManager.drag();
+    //await windowManager.drag();
   }
 
   Widget _buildDraggableSpace({double? height, double? width}) {

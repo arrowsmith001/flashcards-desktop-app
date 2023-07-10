@@ -6,6 +6,6 @@ class FlashcardAppThemes {
   static ThemeData defaultTheme = MinimalTheme.theme;
 
   static ThemeData flashcardBaseTheme = ThemeData(
-    scaffoldBackgroundColor: Color.fromARGB(255, 0, 0, 0)
+    scaffoldBackgroundColor: Colors.red // Color.fromARGB(255, 0, 0, 0)
   );
 }

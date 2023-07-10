@@ -6,10 +6,10 @@ import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 
-class WindowManagerWrapper with WindowListener
+class AppWindowManager with WindowListener
 {
 
-  WindowManagerWrapper(){
+  AppWindowManager(){
     windowManager.addListener(this);
   }
 

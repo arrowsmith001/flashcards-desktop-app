@@ -9,28 +9,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firedart/firedart.dart';
 import 'package:flashcard_desktop_app/src/model/entities/flashcard.dart';
-import 'package:flutter/material.dart' as material;
-import 'package:get_it/get_it.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 
+import '../../main.dart';
 import '../model/entities/flashcard_result.dart';
 import '../window/app_window_manager.dart';
 
 Logger logger = Logger();
 
-class StudyView extends StatefulWidget {
+class StudyView extends ConsumerStatefulWidget {
 
   const StudyView(this.flashcardDirectoryIds, {super.key});
   final List<String> flashcardDirectoryIds;
 
   @override
-  State<StudyView> createState() => _StudyViewState();
+  ConsumerState<StudyView> createState() => _StudyViewState();
 }
 
-class _StudyViewState extends State<StudyView> {
+class _StudyViewState extends ConsumerState<StudyView> {
 
-  WindowManagerWrapper get windowManager => GetIt.I.get<WindowManagerWrapper>(); 
 
   bool isTransitioning = false;
 
@@ -87,6 +87,8 @@ class _StudyViewState extends State<StudyView> {
 
 
   void onZero() async {
+    
+    final wm = ref.read(windowManagerProvider);
     AppLogger.log('onZero');
     t.cancel();
 
@@ -99,12 +101,13 @@ class _StudyViewState extends State<StudyView> {
     final r = Random();
     final flashcard = flashcardsToDo[r.nextInt(flashcardsToDo.length)];
 
-    final result = await Navigator.pushNamed<bool>(context, RouteGenerator.flashcardRoute, arguments: {'flashcard' : flashcard.serialized()});
+    final result = await Navigator.pushNamed<bool>(context, RouteGenerator.flashcardRoute,
+      arguments: {'flashcard' : flashcard.serialized()});
 
-    await windowManager.setDefaultSizeAndPosition();
-    await windowManager.blur();
+    await wm.setDefaultSizeAndPosition();
+    await wm.blur();
 
-    await windowManager.makeVisible();
+    await wm.makeVisible();
 
     if(result != null)
     {
@@ -170,7 +173,7 @@ class _StudyViewState extends State<StudyView> {
         future: initializeStudySession(),
         builder: ((context, snapshot) {
     
-          if(!snapshot.hasData){ return const Center(child: material.CircularProgressIndicator()); }
+          if(!snapshot.hasData){ return const Center(child: CircularProgressIndicator()); }
           if(snapshot.hasError){ return Center(child: Text("There was an error: ${snapshot.error.toString()}"));}
     
 

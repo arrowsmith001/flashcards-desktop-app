@@ -1,7 +1,12 @@
 
 
-import '../../custom/data/abstract/entity.dart';
 
+import 'package:json_annotation/json_annotation.dart';
+
+import '../../custom/data/abstract/entity.dart';
+//part 'deck_collection.g.dart';
+
+@JsonSerializable()
 class DeckCollection extends Entity {
 
   final String? creatorUserId;

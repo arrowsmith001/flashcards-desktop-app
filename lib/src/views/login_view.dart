@@ -1,25 +1,27 @@
 import 'package:firedart/firedart.dart';
+import 'package:flashcard_desktop_app/main.dart';
 import 'package:flashcard_desktop_app/src/classes/app_config.dart';
 import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
 import 'package:flashcard_desktop_app/src/custom/data/abstract/auth_service.dart';
 import 'package:flashcard_desktop_app/src/navigation/route_generator.dart';
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../custom/widgets/card_window.dart';
 import '../custom/widgets/elevated_loadable_button.dart';
 import '../model/entities/user.dart';
-import '../services/app_database_service.dart';
+import '../services/app_database_services.dart';
 import '../window/app_window_manager.dart';
 
-class LoginView extends StatefulWidget {
+
+class LoginView extends ConsumerStatefulWidget {
   const LoginView({super.key});
 
   @override
-  State<LoginView> createState() => _LoginViewState();
+  ConsumerState<LoginView> createState() => _LoginViewState();
 }
 
-class _LoginViewState extends State<LoginView> {
+class _LoginViewState extends ConsumerState<LoginView> {
 
   final Map<String, TextEditingController> textControllers = {
     "Email" : TextEditingController(),
@@ -31,20 +33,23 @@ class _LoginViewState extends State<LoginView> {
   @override
   void initState() {
     super.initState();
-    textControllers["Email"]!.text = GetIt.I.get<AppConfigManager>().email!;
-    textControllers["Password"]!.text = GetIt.I.get<AppConfigManager>().password!;
+
+    final config = ref.read(appConfigProvider);
+
+    textControllers["Email"]!.text = config.email!;
+    textControllers["Password"]!.text = config.password!;
   }
 
   Future<void> login() async {
     setState(() { isLoggingIn = true; });
 
+    final authService = ref.read(authServiceProvider);
+    final userService = ref.read(userRepoProvider);
     try
     {
-      final auth = GetIt.I.get<AuthService>();
-      await auth.loginWithEmailAndPassword(textControllers['Email']!.text, textControllers['Password']!.text);
-      final userId = await auth.getLoggedInId();
-      final user = await GetIt.I.get<UserService>().getUserById(userId!);
-      GetIt.I.get<UserService>().setCurrentUser(user!);
+      await authService.loginWithEmailAndPassword(textControllers['Email']!.text, textControllers['Password']!.text);
+      final userId = await authService.getLoggedInId();
+      final user = await userService.getItemById(userId!);
     }on Exception catch(e)
     {
       AppLogger.log('login exception: $e');
@@ -53,7 +58,7 @@ class _LoginViewState extends State<LoginView> {
     
     setState(() {  isLoggingIn = false; });
 
-    if(GetIt.I.get<UserService>().getCurrentUser() != null) navigateToMain();
+    if(await authService.isLoggedIn()) navigateToMain();
   }
 
   Future<void> fakeLogin() async {
@@ -68,7 +73,8 @@ class _LoginViewState extends State<LoginView> {
   }
 
    void navigateToMain(){
-    Navigator.pushNamed(context, RouteGenerator.mainRoute);
+    final AppWindowManager wm = ref.watch(windowManagerProvider);
+    Navigator.pushNamed(context, RouteGenerator.mainRoute, arguments: {'windowWidth' : wm.currentSize.width});
   }
 
   @override

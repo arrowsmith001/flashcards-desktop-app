@@ -7,6 +7,9 @@ import '../../custom/data/abstract/entity.dart';
 
 
 
+import 'package:json_annotation/json_annotation.dart';
+//part 'flashcard.g.dart';
+@JsonSerializable()
 class Flashcard extends Entity
 {
   Flashcard(super.id, this.deckId, this.prompt, this.response);

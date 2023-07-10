@@ -1,5 +1,8 @@
 import '../../custom/data/abstract/entity.dart';
 
+import 'package:json_annotation/json_annotation.dart';
+//part 'deck.g.dart';
+@JsonSerializable()
 class Deck extends Entity {
   
   final String? name;

@@ -2,6 +2,9 @@
 import '../../custom/data/abstract/entity.dart';
 import 'flashcard.dart';
 
+import 'package:json_annotation/json_annotation.dart';
+//part 'flashcard_result.g.dart';
+@JsonSerializable()
 class FlashcardResult extends Entity {
 
   final String flashcardId;

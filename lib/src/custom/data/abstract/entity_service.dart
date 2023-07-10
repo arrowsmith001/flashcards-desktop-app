@@ -1,9 +1,10 @@
 import 'entity.dart';
-import 'store.dart';
+import 'repository.dart';
 
 abstract class EntityService<T extends Entity> 
 {
   EntityService(this.entityStore); 
 
-  final Store<T> entityStore;
+  final Repository<T> entityStore;
+  int get entityCount => entityStore.cacheCount;
 }

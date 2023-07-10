@@ -3,61 +3,94 @@ import 'dart:math';
 
 import 'package:firedart/firedart.dart';
 import 'package:flashcard_desktop_app/src/classes/app_config.dart';
+import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
 import 'package:flashcard_desktop_app/src/custom/data/abstract/auth_service.dart';
 import 'package:flashcard_desktop_app/src/custom/data/abstract/database_service.dart';
+import 'package:flashcard_desktop_app/src/custom/data/abstract/entity_service.dart';
+import 'package:flashcard_desktop_app/src/custom/data/implemented/local.dart';
 import 'package:flashcard_desktop_app/src/model/entities/flashcard.dart';
-import 'package:flashcard_desktop_app/src/services/app_database_service.dart';
+import 'package:flashcard_desktop_app/src/services/app_database_services.dart';
+import 'package:flashcard_desktop_app/src/services/app_deck_service.dart';
+import 'package:flashcard_desktop_app/src/services/implemented/local_services.dart';
 import 'package:flashcard_desktop_app/src/window/app_window_manager.dart';
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod/riverpod.dart';
+import 'package:sqflite/sqflite.dart';
 import 'src/app.dart';
-import 'src/custom/data/abstract/store.dart';
+import 'src/custom/data/abstract/repository.dart';
 import 'src/model/entities/deck.dart';
 import 'src/model/entities/deck_collection.dart';
 import 'src/model/entities/user.dart';
 
-GetIt get g => GetIt.I;
+
+final windowManagerProvider = Provider<AppWindowManager>((ref) => throw UnimplementedError());
+final appConfigProvider = Provider<AppConfig>((ref) => throw UnimplementedError());
+
+final authServiceProvider = Provider<AuthService>((ref) => throw UnimplementedError());
+final userRepoProvider = Provider<Repository<User>>((ref) => throw UnimplementedError());
+final flashcardRepoProvider = Provider<Repository<Flashcard>>((ref) => throw UnimplementedError());
+final deckRepoProvider = Provider<Repository<Deck>>((ref) => throw UnimplementedError());
+final deckCollectionRepoProvider = Provider<Repository<DeckCollection>>((ref) => throw UnimplementedError());
+
+final deckServiceProvider = Provider<AppDeckService>((ref) => throw UnimplementedError());
+
 
 void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
 
-  await configureDependencyInjection();
+  final wm = AppWindowManager();
+  await wm.initialize();
 
-  runApp(MyApp());
-}
+  final config = AppConfig();
+  await config.configureForEnvironment('dev'); 
 
-Future<void> configureDependencyInjection() async
-{ 
-  configureAppConfig();
-  configureWindowManager();
+  final services = FlashcardAppLocalServices();
+  await services.initialize(config);
 
-  configureDataServices();
-  configureDataStores();
-  configureDatabaseServices();
+  final initial = await services.deckCollectionService.fetchAll();
+  AppLogger.log(initial.length);
 
-  configureAuth();
-
-  await g.allReady();
-}
-
-void firebase() async {
-  final auth = GetIt.I.get<AuthService>();
-  final config = GetIt.I.get<AppConfigManager>();
-  await auth.loginWithEmailAndPassword(config.email!, config.password!);
+  runApp(
+    ProviderScope(
+    overrides: [
+      windowManagerProvider.overrideWith((ref) => wm),
+      appConfigProvider.overrideWith((ref) => config),
+      authServiceProvider.overrideWith((ref) => services.authService),
+      userRepoProvider.overrideWith((ref) => Repository(services.userService)),
+      flashcardRepoProvider.overrideWith((ref) => Repository(services.flashcardService)),
+      deckRepoProvider.overrideWith((ref) => Repository(services.deckService)),
+      deckCollectionRepoProvider.overrideWith((ref) => Repository(services.deckCollectionService, initialItems: initial)),
+      deckServiceProvider.overrideWith((ref) => 
+        AppDeckService(
+          ref.read(authServiceProvider), 
+          ref.read(deckCollectionRepoProvider), 
+          ref.read(deckRepoProvider), 
+          ref.read(flashcardRepoProvider))),
+    ],
+      child: MyApp()));
+ 
   
-  final deckService = await GetIt.I.get<DeckService>();
-  final colService = await GetIt.I.get<DeckCollectionService>();
 
-  final decks = await deckService.getAllDecks();
+  
+}
+
+
+
+void firebase(config, auth, AppDatabaseServices services) async {
+
+/*   await auth.loginWithEmailAndPassword(config.email!, config.password!);
+  
+
+  final decks = await services.deckService.getAllDecks();
   final paths = [
     'Path A/Path B-1/Path ABCD',
     'Path 1/Path B-1/Path 3',
     'Path 1/Path B-1/Path 4',
     'Path 1/Path B-2',
   ];
-  final col = await colService.getCollectionById('id');
+  final col = await services.deckCollectionService.getCollectionById('id');
   final map = {};
   for(var d in decks)
   {
@@ -72,89 +105,10 @@ void configureAuth() {
 
   g.registerLazySingleton<AuthService>(()
   {
-      final firebaseServices = g.get<FlashcardAppFirebaseServices>();
-      return firebaseServices.authService;
-  });
+      final appServices = g.get<FlashcardAppDatabaseServices>();
+      return appServices.authService;
+  }); */
 }
 
-void configureDataServices() {
 
-  g.registerLazySingleton<UserService>(() 
-    => UserService(g.get<Store<User>>()));
-
-  g.registerLazySingleton<FlashcardService>(() 
-    => FlashcardService(g.get<Store<Flashcard>>()));
-
-  g.registerLazySingleton<DeckService>(() 
-    => DeckService(g.get<Store<Deck>>()));
-
-  g.registerLazySingleton<DeckCollectionService>(() 
-    => DeckCollectionService(g.get<Store<DeckCollection>>()));
-
-}
-
-void configureDataStores() {
-
-  g.registerLazySingleton<Store<User>>(() 
-    => Store<User>(g.get<DatabaseService<User>>()));
-
-  g.registerLazySingleton<Store<Flashcard>>(() 
-    => Store<Flashcard>(g.get<DatabaseService<Flashcard>>()));
-
-  g.registerLazySingleton<Store<Deck>>(() 
-    => Store<Deck>(g.get<DatabaseService<Deck>>()));
-
-  g.registerLazySingleton<Store<DeckCollection>>(() 
-    => Store<DeckCollection>(g.get<DatabaseService<DeckCollection>>()));
-}
-
-void configureDatabaseServices() {
-    
-  g.registerLazySingleton<DatabaseService<User>>(() 
-    {
-      final firebaseServices = g.get<FlashcardAppFirebaseServices>();
-      return firebaseServices.userService;
-    });
-    
-  g.registerLazySingleton<DatabaseService<Flashcard>>(() 
-    {
-      final firebaseServices = g.get<FlashcardAppFirebaseServices>();
-      return firebaseServices.flashcardService;
-    });
-
-  g.registerLazySingleton<DatabaseService<Deck>>(() 
-    {
-      final firebaseServices = g.get<FlashcardAppFirebaseServices>();
-      return firebaseServices.deckService;
-    });
-
-  g.registerLazySingleton<DatabaseService<DeckCollection>>(() 
-    {
-      final firebaseServices = g.get<FlashcardAppFirebaseServices>();
-      return firebaseServices.deckCollectionService;
-    });
-
-    // Firebase services
-    g.registerSingletonAsync<FlashcardAppFirebaseServices>(() async
-    {
-        final service = FlashcardAppFirebaseServices();
-        await service.initialize(await g.getAsync<AppConfigManager>());
-        return service;
-    }, dependsOn: [AppConfigManager]);
-}
-
-void configureWindowManager() => g.registerSingletonAsync<WindowManagerWrapper>(() async 
-{
-  final wm = WindowManagerWrapper();
-  await wm.initialize();
-  return wm;
-});
-
-void configureAppConfig() {
-  return g.registerSingletonAsync<AppConfigManager>(() async {
-  final config = AppConfigManager();
-  await config.configureForEnvironment('dev');
-  return config;
-});
-}
 

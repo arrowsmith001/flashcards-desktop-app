@@ -8,10 +8,10 @@ import 'package:flutter/material.dart';
 import 'database_service.dart';
 import 'entity.dart';
 
-class Store<T extends Entity>
+class Repository<T extends Entity>
 {
   
-  Store(this.databaseService, {Iterable<T>? initialItems})
+  Repository(this.databaseService, {Iterable<T>? initialItems})
   {
     if(initialItems != null && initialItems.isNotEmpty)
     {
@@ -20,6 +20,7 @@ class Store<T extends Entity>
   }
 
   Cache<T> cache = Cache();
+  int get cacheCount => cache.count;
 
   final DatabaseService<T> databaseService;
 
@@ -90,6 +91,8 @@ class Cache<T extends Entity>
 {
 
   final HashMap<String, T> itemIdsToItems = HashMap();
+
+  get count => itemIdsToItems.length;
 
   T? get(String id){
     return itemIdsToItems[id];

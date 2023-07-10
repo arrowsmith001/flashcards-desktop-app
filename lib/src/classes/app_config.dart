@@ -2,10 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 
-class AppConfigManager {
+class AppConfig {
   
 
-  AppConfigManager();
+  AppConfig();
 
 
   String? apiKey;
@@ -13,7 +13,7 @@ class AppConfigManager {
   String? email;
   String? password;
 
-  Future<AppConfigManager> configureForEnvironment(String env) async {
+  Future<AppConfig> configureForEnvironment(String env) async {
 
     var data = await rootBundle.loadString("assets/config/$env.json");
     var json = jsonDecode(data);

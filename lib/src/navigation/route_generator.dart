@@ -1,12 +1,12 @@
+import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
 import 'package:flashcard_desktop_app/src/model/entities/flashcard.dart';
 import 'package:flashcard_desktop_app/src/views/flashcard_directories_listing_view.dart';
 import 'package:flashcard_desktop_app/src/views/flashcard_view.dart';
 import 'package:flashcard_desktop_app/src/views/main_view.dart';
 import 'package:flashcard_desktop_app/src/views/study_view.dart';
 import 'package:flashcard_desktop_app/src/window/app_window_manager.dart';
-import 'package:flutter/material.dart' as material;
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
+import 'package:flutter/material.dart';
 
 import '../views/login_view.dart';
 
@@ -19,7 +19,10 @@ class RouteGenerator {
   static const String flashcardRoute = '/flashcard';
 
   static Route generateRoute(RouteSettings settings){
-    final args = (settings.arguments as Map?);
+
+    final args = (settings.arguments as Map?) ?? {};
+    final double windowHeight = args['windowHeight'] ?? 0.0; 
+    final double windowWidth = args['windowWidth'] ?? 0.0; 
     
     switch(settings.name){
       case entryRoute:
@@ -30,8 +33,6 @@ class RouteGenerator {
               return const LoginView();
             },
             transitionsBuilder: (_, Animation<double> animation, Animation<double> second, Widget child) {
-              
-              final double windowHeight = GetIt.I.get<WindowManagerWrapper>().windowSize.height; 
 
               CurvedAnimation curvedIn = CurvedAnimation(parent: animation, curve: Curves.decelerate);
               CurvedAnimation curvedOut = CurvedAnimation(parent: second, curve: Curves.decelerate);
@@ -72,8 +73,7 @@ class RouteGenerator {
               return MainView();
             },
             transitionsBuilder: (_, Animation<double> animation, Animation<double> second, Widget child) {
-              
-              final double windowWidth = GetIt.I.get<WindowManagerWrapper>().windowSize.width; 
+
                       
               CurvedAnimation curvedIn = CurvedAnimation(parent: animation, curve: Curves.decelerate);
               CurvedAnimation curvedOut = CurvedAnimation(parent: second, curve: Curves.decelerate);
@@ -115,6 +115,8 @@ class RouteGenerator {
             }
         );
     }
+
+
     return unKnownRoute(settings);
   }
 
@@ -131,7 +133,7 @@ class RouteGenerator {
                   onTap: () => Navigator.of(context).pop(),
                   child: Container(
                     padding: const EdgeInsets.all(10.0),
-                    color:material.Colors.blue,
+                    color: Colors.blue,
                     child: const Text("Back"),
                   ),
                 )

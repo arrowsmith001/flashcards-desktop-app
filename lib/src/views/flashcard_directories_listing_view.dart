@@ -8,33 +8,76 @@ import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
 import 'package:flashcard_desktop_app/src/custom/widgets/card_window.dart';
 import 'package:flashcard_desktop_app/src/model/entities/deck_collection.dart';
 import 'package:flashcard_desktop_app/src/navigation/route_generator.dart';
-import 'package:flashcard_desktop_app/src/services/app_database_service.dart';
+import 'package:flashcard_desktop_app/src/services/app_database_services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_treeview/flutter_treeview.dart';
-import 'package:get_it/get_it.dart';
 
+import '../../main.dart';
 import '../custom/data/abstract/database_service.dart';
 import '../model/entities/deck.dart';
 import '../model/entities/flashcard.dart';
 import '../model/entities/user.dart';
+import '../services/app_deck_service.dart';
 import '../window/app_window_manager.dart';
 
-class FlashcardDirectoriesListingView extends StatefulWidget {
-  const FlashcardDirectoriesListingView({super.key});
 
-  @override
-  State<FlashcardDirectoriesListingView> createState() => _FlashcardDirectoriesListingViewState();
+final flashcardDeckListingControllerProvider = StateNotifierProvider<FlashcardDeckListingNotifier, AsyncValue<List<DeckCollection>>>((ref) {
+  return FlashcardDeckListingNotifier(ref.watch(deckServiceProvider));
+});
+
+
+
+class FlashcardDeckListingNotifier extends StateNotifier< AsyncValue<List<DeckCollection>>> {
+
+  FlashcardDeckListingNotifier(this.deckService) : super(AsyncValue.data([]))
+  {
+    getAllCollections();
+  }
+
+  final AppDeckService deckService;
+
+  Future<void> getAllCollections() async
+  {
+    state = const AsyncLoading();
+    
+    final collections = await deckService.getAllCollections();
+    
+    state = AsyncData(collections);
+  }
+
+  Future<void> addCollection(DeckCollection collection) async 
+  {
+    state = const AsyncLoading();
+    
+    await deckService.addDeckCollection(collection);
+    final collections = await deckService.getAllCollections();
+
+    state = AsyncData(collections);
+  }
 }
 
-class _FlashcardDirectoriesListingViewState extends State<FlashcardDirectoriesListingView> {
+class FlashcardDirectoriesListingView extends ConsumerStatefulWidget {
 
+  final FlashcardDeckListingNotifier controller;
+
+  const FlashcardDirectoriesListingView(this.controller, {super.key});
+
+  @override
+  ConsumerState<FlashcardDirectoriesListingView> createState() => _FlashcardDirectoriesListingViewState();
+}
+
+class _FlashcardDirectoriesListingViewState extends ConsumerState<FlashcardDirectoriesListingView> {
+
+  FlashcardDeckListingNotifier get controller => widget.controller;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  
   bool isLoading = true;
-
-  DeckService deckService = GetIt.I.get<DeckService>();
-
-
-  WindowManagerWrapper get windowManager => GetIt.I.get<WindowManagerWrapper>(); 
-
   List<String> selectedDirectoryIds = [];
 
   @override
@@ -71,37 +114,60 @@ class _FlashcardDirectoriesListingViewState extends State<FlashcardDirectoriesLi
     );
   }
 
-  CardWindow _buildDeckBrowser(BuildContext context) => 
-    CardWindow(child: 
-      StreamBuilder(
-        stream: GetIt.I.get<UserService>().streamCurrentUser(),
-        builder: 
-      (context, snapshot) 
-      {
-        if(!snapshot.hasData) return CircularProgressIndicator();
-        if(snapshot.hasError) return Text(snapshot.error.toString());
+  
 
-        final User user = snapshot.data!;
-        final collections = user.deckCollectionIds;
-        
-        return _buildDeckCollectionList(context, collections);
+  Widget _buildDeckBrowser(BuildContext context) {
 
-    }));
+    final deckCollectionListAsync = ref.watch(flashcardDeckListingControllerProvider);
 
+    final loading = deckCollectionListAsync.isLoading;
+
+    final deckCollectionList = deckCollectionListAsync.value;
+
+    return CardWindow(child: 
+
+ /*      Navigator(
+        onGenerateRoute: (settings) => 
+        PageRouteBuilder(pageBuilder: (context, _, __)
+        {
+            return  */
+
+            Stack(
+              fit: StackFit.expand,
+              children: [
+
+                Column(
+                    children: [
+                      Center(child: Column(children: 
+                      [
+                        Text('Add Deck Collection (${deckCollectionList?.length ?? '-'})'),
+                        IconButton(onPressed: () {
+                          onAddDeckCollection(context);
+                        }, icon: Icon(Icons.add))],)),
+
+                        Expanded(child: _buildDeckCollectionList(context, deckCollectionList ?? []))
+                    ],
+                  ),
+
+                  loading ? Center(child: Container(color: const Color.fromARGB(144, 255, 255, 255))) : SizedBox.shrink()
+              ],
+            )) ;
+        }
+       
+/*        ,
+      )); */
+  
     
-  Widget _buildDeckCollectionList(BuildContext context, List<String> collections) 
+  Widget _buildDeckCollectionList(BuildContext context, List<DeckCollection> collections) 
   {
-      return FutureBuilder<List<DeckCollection>>(
-        future: GetIt.I.get<DeckCollectionService>().getCollectionsById(collections),
-        builder: ((context, snapshot) {
+      return ListView(
+              children: collections.map((e) => ListTile(title: Text(e.name!))).toList());
+  }
 
-      if(!snapshot.hasData) return CircularProgressIndicator();
-      if(snapshot.hasError) return Text(snapshot.error.toString());
-
-            return ListView(
-              children: 
-              snapshot.data!.map((e) => ListTile(title: Text(e.name!))).toList());
-        }));
+  Future<void> onAddDeckCollection(context) async 
+  {   
+    final notifier = ref.read(flashcardDeckListingControllerProvider.notifier);
+    await notifier.addCollection(DeckCollection('id', null, 'My Decks', {}, true));
   }
 
   FutureBuilder<Object?> _oldBody() {
@@ -161,7 +227,8 @@ class _FlashcardDirectoriesListingViewState extends State<FlashcardDirectoriesLi
   }
 
   void onBeginStudy(context) {
-    Navigator.pushNamed(context, RouteGenerator.studyRoute, arguments : {'flashcardDirectoryIds' : selectedDirectoryIds});
+    final AppWindowManager wm = ref.watch(windowManagerProvider);
+    Navigator.pushNamed(context, RouteGenerator.studyRoute, arguments : {'flashcardDirectoryIds' : selectedDirectoryIds, 'windowSize' : wm.currentSize});
   }
 
 
@@ -219,6 +286,8 @@ Node<T> convertToImmutableTree<T>(AddableTreeNode<T> addableNode) {
             else selectedDirectoryIds.remove(id);
           });
   }
+  
+
   
   
   

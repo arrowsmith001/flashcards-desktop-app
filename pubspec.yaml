@@ -19,17 +19,22 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   flutter_treeview: ^1.0.7+1
-  get_it: ^7.6.0
-  logger: ^1.4.0
   percent_indicator: ^4.2.3
   provider: ^6.0.5
   shared_preferences: ^2.1.2
+  sqflite: ^2.2.8+4
   window_manager: ^0.3.4
+  json_annotation: ^4.6.0
+  sqflite_common_ffi: any
+  riverpod: ^2.3.6
+  flutter_riverpod: ^2.3.6
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
+  json_serializable: ^6.7.1
+  build_runner: ^2.2.0
+  logger: ^1.4.0
   flutter_lints: ^2.0.0
 
 flutter:

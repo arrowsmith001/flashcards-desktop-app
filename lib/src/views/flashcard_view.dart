@@ -1,25 +1,25 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:flashcard_desktop_app/main.dart';
 import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
 import 'package:flashcard_desktop_app/src/model/entities/flashcard.dart';
 import 'package:flashcard_desktop_app/src/window/app_window_manager.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:get_it/get_it.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class FlashcardView extends StatefulWidget {
+class FlashcardView extends ConsumerStatefulWidget {
   FlashcardView(this.flashcard, {super.key});
 
   final Flashcard flashcard;
   final _navKey = GlobalKey<NavigatorState>();
 
   @override
-  State<FlashcardView> createState() => _FlashcardViewState();
+  ConsumerState<FlashcardView> createState() => _FlashcardViewState();
 }
 
-class _FlashcardViewState extends State<FlashcardView>
+class _FlashcardViewState extends ConsumerState<FlashcardView>
     with TickerProviderStateMixin {
-  WindowManagerWrapper get windowManager => GetIt.I.get<WindowManagerWrapper>(); 
 
   Flashcard get flashcard  => widget.flashcard;
 
@@ -32,10 +32,11 @@ class _FlashcardViewState extends State<FlashcardView>
   dismissFlashcard() async
   {
 
+    final wm = ref.read(windowManagerProvider);
 
     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
       
-        windowManager.dismissAndMakeInvisible().then((value) => Navigator.of(context, rootNavigator: true).pop());
+        wm.dismissAndMakeInvisible().then((value) => Navigator.of(context, rootNavigator: true).pop());
 
      });
   }
@@ -43,16 +44,19 @@ class _FlashcardViewState extends State<FlashcardView>
   
   onTapResponse(bool bool) {
 
+    final wm = ref.read(windowManagerProvider);
+
     setState(() {
       transitioningBack = true;
     });
 
-    windowManager.dismissAndMakeInvisible().then((value) => Navigator.of(context).pop(bool));
+    wm.dismissAndMakeInvisible().then((value) => Navigator.of(context).pop(bool));
   }
 
   @override
   void initState() {
     super.initState();
+    final wm = ref.read(windowManagerProvider);
 
     _entryAnimationController = AnimationController(
       vsync: this, 
@@ -69,7 +73,7 @@ class _FlashcardViewState extends State<FlashcardView>
     entryAnim = CurvedAnimation(parent: _entryAnimationController, curve: Curves.easeOut);
     transitionAnim = CurvedAnimation(parent: _transitionAnimationController, curve: Curves.easeInOut);
     
-    windowManager.setNotificationModeSizeAndPosition().then((v) => _entryAnimationController.animateTo(0));
+    wm.setNotificationModeSizeAndPosition().then((v) => _entryAnimationController.animateTo(0));
   }
 
   @override
@@ -101,7 +105,7 @@ class _FlashcardViewState extends State<FlashcardView>
   Widget build(BuildContext context) {
     return transitioningBack ? const Center(child: CircularProgressIndicator())
     : Transform.translate(
-        offset: Offset(WindowManagerWrapper.notificationModeSize.width * entryAnim.value, 0),
+        offset: Offset(AppWindowManager.notificationModeSize.width * entryAnim.value, 0),
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           
@@ -114,7 +118,7 @@ class _FlashcardViewState extends State<FlashcardView>
         ));
   }
   
-  double get windowWidth => WindowManagerWrapper.notificationModeSize.width; 
+  double get windowWidth => AppWindowManager.notificationModeSize.width; 
 
   Widget buildFlashcard(BuildContext context) {
     return InkWell(

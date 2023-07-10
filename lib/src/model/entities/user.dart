@@ -1,6 +1,10 @@
 
 import '../../custom/data/abstract/entity.dart';
 
+import 'package:json_annotation/json_annotation.dart';
+//part 'user.g.dart';
+
+@JsonSerializable()
 class User extends Entity {
   final String name;
   final List<String> deckCollectionIds;
