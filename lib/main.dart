@@ -1,4 +1,3 @@
-
 import 'dart:math';
 
 import 'package:firedart/firedart.dart';
@@ -9,6 +8,8 @@ import 'package:flashcard_desktop_app/src/custom/data/abstract/database_service.
 import 'package:flashcard_desktop_app/src/custom/data/abstract/entity_service.dart';
 import 'package:flashcard_desktop_app/src/custom/data/implemented/local.dart';
 import 'package:flashcard_desktop_app/src/model/entities/flashcard.dart';
+import 'package:flashcard_desktop_app/src/providers/deck_collection_providers.dart';
+import 'package:flashcard_desktop_app/src/providers/deck_providers.dart';
 import 'package:flashcard_desktop_app/src/services/app_database_services.dart';
 import 'package:flashcard_desktop_app/src/services/app_deck_service.dart';
 import 'package:flashcard_desktop_app/src/services/implemented/local_services.dart';
@@ -23,63 +24,60 @@ import 'src/model/entities/deck.dart';
 import 'src/model/entities/deck_collection.dart';
 import 'src/model/entities/user.dart';
 
+final windowManagerProvider =
+    Provider<AppWindowManager>((ref) => throw UnimplementedError());
+final appConfigProvider =
+    Provider<AppConfig>((ref) => throw UnimplementedError());
 
-final windowManagerProvider = Provider<AppWindowManager>((ref) => throw UnimplementedError());
-final appConfigProvider = Provider<AppConfig>((ref) => throw UnimplementedError());
+final authServiceProvider =
+    Provider<AuthService>((ref) => throw UnimplementedError());
+final userRepoProvider =
+    Provider<Repository<User>>((ref) => throw UnimplementedError());
+final flashcardRepoProvider =
+    Provider<Repository<Flashcard>>((ref) => throw UnimplementedError());
+final deckRepoProvider =
+    Provider<Repository<Deck>>((ref) => throw UnimplementedError());
+final deckCollectionRepoProvider =
+    Provider<Repository<DeckCollection>>((ref) => throw UnimplementedError());
 
-final authServiceProvider = Provider<AuthService>((ref) => throw UnimplementedError());
-final userRepoProvider = Provider<Repository<User>>((ref) => throw UnimplementedError());
-final flashcardRepoProvider = Provider<Repository<Flashcard>>((ref) => throw UnimplementedError());
-final deckRepoProvider = Provider<Repository<Deck>>((ref) => throw UnimplementedError());
-final deckCollectionRepoProvider = Provider<Repository<DeckCollection>>((ref) => throw UnimplementedError());
-
-final deckServiceProvider = Provider<AppDeckService>((ref) => throw UnimplementedError());
-
+final deckServiceProvider =
+    Provider<AppDeckService>((ref) => throw UnimplementedError());
 
 void main() async {
-
   WidgetsFlutterBinding.ensureInitialized();
 
   final wm = AppWindowManager();
   await wm.initialize();
 
   final config = AppConfig();
-  await config.configureForEnvironment('dev'); 
+  await config.configureForEnvironment('dev');
 
   final services = FlashcardAppLocalServices();
   await services.initialize(config);
 
-  final initial = await services.deckCollectionService.fetchAll();
-  AppLogger.log(initial.length);
+  runApp(ProviderScope(overrides: [
+    windowManagerProvider.overrideWith((ref) => wm),
+    appConfigProvider.overrideWith((ref) => config),
+    authServiceProvider.overrideWith((ref) => services.authService),
+    userRepoProvider.overrideWith((ref) => Repository(services.userService)),
+    flashcardRepoProvider
+        .overrideWith((ref) => Repository(services.flashcardService)),
+    deckRepoProvider.overrideWith((ref) => Repository(services.deckService)),
+    deckCollectionRepoProvider
+        .overrideWith((ref) => Repository(services.deckCollectionService)),
+    deckServiceProvider.overrideWith((ref) => AppDeckService(
+        ref.read(authServiceProvider),
+        ref.read(deckCollectionRepoProvider),
+        ref.read(deckRepoProvider),
+        ref.read(flashcardRepoProvider))),
 
-  runApp(
-    ProviderScope(
-    overrides: [
-      windowManagerProvider.overrideWith((ref) => wm),
-      appConfigProvider.overrideWith((ref) => config),
-      authServiceProvider.overrideWith((ref) => services.authService),
-      userRepoProvider.overrideWith((ref) => Repository(services.userService)),
-      flashcardRepoProvider.overrideWith((ref) => Repository(services.flashcardService)),
-      deckRepoProvider.overrideWith((ref) => Repository(services.deckService)),
-      deckCollectionRepoProvider.overrideWith((ref) => Repository(services.deckCollectionService, initialItems: initial)),
-      deckServiceProvider.overrideWith((ref) => 
-        AppDeckService(
-          ref.read(authServiceProvider), 
-          ref.read(deckCollectionRepoProvider), 
-          ref.read(deckRepoProvider), 
-          ref.read(flashcardRepoProvider))),
-    ],
-      child: MyApp()));
- 
-  
-
-  
+    // FAKES
+    //deckCollectionProvider.overrideWithProvider(fakeDeckCollectionProvider),
+    //decksProvider.overrideWithProvider(fakeDecksProvider),
+  ], child: MyApp()));
 }
 
-
-
 void firebase(config, auth, AppDatabaseServices services) async {
-
 /*   await auth.loginWithEmailAndPassword(config.email!, config.password!);
   
 
@@ -109,6 +107,3 @@ void configureAuth() {
       return appServices.authService;
   }); */
 }
-
-
-

@@ -28,6 +28,7 @@ dependencies:
   sqflite_common_ffi: any
   riverpod: ^2.3.6
   flutter_riverpod: ^2.3.6
+  tuple: ^2.0.2
 
 dev_dependencies:
   flutter_test:

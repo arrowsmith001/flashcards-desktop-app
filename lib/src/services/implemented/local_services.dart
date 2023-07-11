@@ -1,4 +1,3 @@
-
 import 'dart:io';
 
 import 'package:flashcard_desktop_app/src/classes/app_config.dart';
@@ -16,51 +15,49 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../custom/data/abstract/entity.dart';
 
-class FlashcardAppLocalServices implements AppDatabaseServices
-{
+class FlashcardAppLocalServices implements AppDatabaseServices {
   @override
   Future<void> initialize(AppConfig config) async {
     // TODO: Implement disposable pattern
 
-    if(Platform.isWindows)
-    {
+    if (Platform.isWindows) {
       sqfliteFfiInit();
       databaseFactory = databaseFactoryFfi;
     }
     var dbPath = await getDatabasesPath();
-    String path = '${dbPath}/test2/demo.db';
+    String path = '${dbPath}/test9/demo.db';
 
     await deleteDatabase(path);
 
     database = await openDatabase(path, version: 1,
         onCreate: (Database db, int version) async {
-
-            // When creating the db, create the table
-            for(var t in ['Decks', 'DeckCollections', 'Flashcards', 'Users'])
-            {   
-              await db.execute('CREATE TABLE $t (id TEXT PRIMARY KEY, json TEXT)');
-            }
-        }
-      );
-
+      // When creating the db, create the table
+      for (var t in ['Decks', 'DeckCollections', 'Flashcards', 'Users']) {
+        await db.execute('CREATE TABLE $t (id INTEGER PRIMARY KEY, json TEXT)');
+      }
+    });
   }
 
   late Database database;
 
   @override
-  late AuthService authService = LocalMockAuthService(database);
+  late AuthService authService = LocalMockAuthService(database, userService);
 
   @override
-  late DatabaseService<DeckCollection> deckCollectionService = LocalJSONDatabaseService<DeckCollection>(database, 'DeckCollections', DeckCollection.deserialize);
+  late DatabaseService<DeckCollection> deckCollectionService =
+      LocalJSONDatabaseService<DeckCollection>(
+          database, 'DeckCollections', DeckCollection.deserialize);
 
   @override
-  late DatabaseService<Deck> deckService = LocalJSONDatabaseService<Deck>(database, 'Decks', Deck.deserialize);
+  late DatabaseService<Deck> deckService =
+      LocalJSONDatabaseService<Deck>(database, 'Decks', Deck.deserialize);
 
   @override
-  late DatabaseService<Flashcard> flashcardService = LocalJSONDatabaseService<Flashcard>(database, 'Flashcards', Flashcard.deserialize);
+  late DatabaseService<Flashcard> flashcardService =
+      LocalJSONDatabaseService<Flashcard>(
+          database, 'Flashcards', Flashcard.deserialize);
 
   @override
-  late DatabaseService<User> userService = LocalJSONDatabaseService<User>(database, 'Users', User.deserialize);
+  late DatabaseService<User> userService =
+      LocalJSONDatabaseService<User>(database, 'Users', User.deserialize);
 }
-
-
