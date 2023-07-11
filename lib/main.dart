@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:stack_trace/stack_trace.dart' as stack_trace;
 import 'package:firedart/firedart.dart';
 import 'package:flashcard_desktop_app/src/classes/app_config.dart';
 import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
@@ -45,6 +46,12 @@ final deckServiceProvider =
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  FlutterError.demangleStackTrace = (StackTrace stack) {
+    if (stack is stack_trace.Trace) return stack.vmTrace;
+    if (stack is stack_trace.Chain) return stack.toTrace().vmTrace;
+    return stack;
+  };
 
   final wm = AppWindowManager();
   await wm.initialize();

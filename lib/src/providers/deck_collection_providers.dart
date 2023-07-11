@@ -57,20 +57,9 @@ class DeckCollectionListNotifier
 }
 
 final deckCollectionProvider =
-    FutureProvider.family<DeckCollection, String>((ref, id) {
+    FutureProvider.family<DeckCollection, String>((ref, id) async {
   final service = ref.watch(deckServiceProvider);
-  return service.getCollectionById(id);
-});
-
-// TODO: Find a more decoupled solution to this...
-final deckCollectionWithDecksProvider =
-    FutureProvider.family<Tuple2<DeckCollection, List<Deck>>, String>(
-        (ref, id) async {
-  final service = ref.watch(deckServiceProvider);
-  final collection = await service.getCollectionById(id);
-  final decks =
-      await service.getDecksByIds(collection.pathsToDeckIds?.values ?? []);
-  return Tuple2(collection, decks);
+  return await service.getCollectionById(id);
 });
 
 final fakeDeckCollectionProvider =

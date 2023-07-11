@@ -4,7 +4,7 @@ import '../../main.dart';
 import '../model/entities/deck.dart';
 
 final decksProvider =
-    FutureProvider.family<List<Deck>, Iterable<String>>((ref, ids) {
+    FutureProvider.family<List<Deck>, Iterable<String>>((ref, ids) async {
   final service = ref.watch(deckServiceProvider);
   return service.getDecksByIds(ids);
 });

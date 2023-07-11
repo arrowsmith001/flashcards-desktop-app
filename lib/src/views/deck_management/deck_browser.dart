@@ -4,10 +4,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_treeview/flutter_treeview.dart';
 
+import '../../../main.dart';
 import '../../model/entities/deck.dart';
 import '../../model/entities/deck_collection.dart';
 import '../../providers/deck_collection_providers.dart';
 import '../../providers/deck_providers.dart';
+
+final currentDeckCollectionProvider = Provider<DeckCollection>((ref) {
+  throw UnimplementedError('currentDeckCollectionProvider');
+});
+
+final currentDecksProvider = Provider<List<Deck>>((ref) {
+  throw UnimplementedError('currentDecksProvider');
+});
+
+final deckCollectionProvider =
+    FutureProvider.family<DeckCollection, String>((ref, id) async {
+  await Future.delayed(Duration(seconds: 1));
+  return DeckCollection('0', null, 'name 0', {}, true);
+});
+final decksProvider =
+    FutureProvider.family<List<Deck>, Iterable<String>>((ref, id) async {
+  await Future.delayed(Duration(seconds: 1));
+  return [];
+});
 
 class DeckBrowser extends ConsumerStatefulWidget {
   final String collectionId;
@@ -25,46 +45,89 @@ class _DeckBrowserState extends ConsumerState<DeckBrowser> {
 
   @override
   Widget build(BuildContext context) {
-    return ProviderScope(
-      overrides: [],
-      child: Builder(builder: (context) {
-        final collectionAsync =
-            ref.watch(deckCollectionWithDecksProvider(collectionId));
+    final collectionAsync = ref.watch(deckCollectionProvider('collectionId'));
+    final decksAsync = ref.watch(decksProvider([]));
 
-        return Column(
-          children: [
-            Expanded(
-              child: collectionAsync.when(
-                  data: (tuple) {
-                    return Column(
-                      children: [
-                        _buildDeckBrowserTopRow(
-                            context, tuple.item1, tuple.item2),
-                        Flexible(
-                          child: _buildDecksView(
-                              context, tuple.item1, tuple.item2),
-                        ),
-                      ],
-                    );
-                  },
-                  error: (e, _) => Text(e.toString()),
-                  loading: () => CircularProgressIndicator(color: Colors.blue)),
-            ),
-          ],
-        );
-      }),
+    return Column(
+      children: [
+        Expanded(
+          child: collectionAsync.when(
+              data: (collection) {
+                return ProviderScope(
+                  overrides: [
+                    currentDeckCollectionProvider.overrideWithValue(collection),
+                    currentDecksProvider
+                        .overrideWithValue(decksAsync.value ?? []),
+                  ],
+                  child: TestWidget(),
+                );
+              },
+              error: (e, _) => Text(e.toString()),
+              loading: () => CircularProgressIndicator(color: Colors.blue)),
+        ),
+      ],
     );
   }
 
-  Widget _buildDecksView(
-      BuildContext context, DeckCollection collection, List<Deck> decks) {
-    return treeViewMode
-        ? _buildDecksTreeView(context, collection, decks)
-        : _buildDecksListView(context, collection, decks);
+/*   @override
+  Widget build(BuildContext context) {
+    return Builder(builder: (context) {
+      final collectionAsync = ref.watch(deckCollectionProvider(collectionId));
+      final decksAsync = ref.watch(
+          decksProvider(collectionAsync.value?.pathsToDeckIds?.values ?? []));
+
+      return Column(
+        children: [
+          Expanded(
+            child: collectionAsync.when(
+                data: (collection) {
+                  return ProviderScope(
+                    overrides: [
+                      currentDeckCollectionProvider
+                          .overrideWithValue(collection),
+                      currentDecksProvider
+                          .overrideWithValue(decksAsync.value ?? []),
+                    ],
+                    child: Column(
+                      children: [
+                        _buildDeckBrowserTopRow(context),
+                        Flexible(
+                          child: _buildDecksView(context),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                error: (e, _) => Text(e.toString()),
+                loading: () => CircularProgressIndicator(color: Colors.blue)),
+          ),
+        ],
+      );
+    });
+  } */
+
+  Widget _buildDecksView(BuildContext context) {
+    final collection = ref.watch(currentDeckCollectionProvider);
+    final decksAsync =
+        ref.watch(decksProvider(collection.pathsToDeckIds?.values ?? []));
+
+    return decksAsync.when(
+        data: (decks) {
+          return ProviderScope(
+              overrides: [
+                // decksProvider.overrideWith((ref, it) => decks)
+              ],
+              child: treeViewMode
+                  ? _buildDecksTreeView(context)
+                  : _buildDecksListView(context));
+        },
+        error: (e, _) => Text(e.toString()),
+        loading: () => CircularProgressIndicator());
   }
 
-  Widget _buildDeckBrowserTopRow(
-      BuildContext context, DeckCollection collection, List<Deck> decks) {
+  Widget _buildDeckBrowserTopRow(BuildContext context) {
+    final collection = ref.watch(currentDeckCollectionProvider);
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -84,8 +147,6 @@ class _DeckBrowserState extends ConsumerState<DeckBrowser> {
 
   Widget _buildDecksListView(
     BuildContext context,
-    DeckCollection collection,
-    List<Deck> decks,
   ) {
     return Column(children: [
       IconButton(
@@ -93,8 +154,10 @@ class _DeckBrowserState extends ConsumerState<DeckBrowser> {
     ]);
   }
 
-  Widget _buildDecksTreeView(
-      BuildContext context, DeckCollection collection, List<Deck> decks) {
+  Widget _buildDecksTreeView(BuildContext context) {
+    final collection = ref.watch(currentDeckCollectionProvider);
+    final decks = ref.watch(currentDecksProvider);
+
     if (decks.isEmpty) {
       return ElevatedButton(
           onPressed: () => throw UnimplementedError(), child: Text('Add Deck'));
@@ -105,5 +168,19 @@ class _DeckBrowserState extends ConsumerState<DeckBrowser> {
         buildNode: (context, d) {
           return ListTile(title: Text(d?.name ?? ' - '));
         });
+  }
+}
+
+class TestWidget extends ConsumerStatefulWidget {
+  const TestWidget({Key? key}) : super(key: key);
+
+  @override
+  _TestWidgetState createState() => _TestWidgetState();
+}
+
+class _TestWidgetState extends ConsumerState<TestWidget> {
+  @override
+  Widget build(BuildContext context) {
+    return Text(ref.watch(currentDeckCollectionProvider).name!);
   }
 }
