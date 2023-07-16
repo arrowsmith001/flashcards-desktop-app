@@ -27,9 +27,9 @@ class Repository<T extends Entity> {
     });
   }
 
-  Future<void> deleteItem(T item) async {
-    await databaseService.delete(item);
-    cache.delete(item);
+  Future<void> deleteItem(String itemId) async {
+    await databaseService.delete(itemId);
+    cache.deleteById(itemId);
   }
 
   Future<T> getItemById(String id) async {
@@ -42,9 +42,9 @@ class Repository<T extends Entity> {
   Future<List<T>> getAll() async {
     final fetchedItems = await databaseService.fetchAll();
     cache.cacheAll(fetchedItems);
-    fetchedItems.forEach((element) {
-      //AppLogger.log(element.serialized().toString());
-    });
+  /*   fetchedItems.forEach((element) {
+      AppLogger.log(element.serialized().toString());
+    }); */
     return fetchedItems;
   }
 
@@ -66,7 +66,7 @@ class Repository<T extends Entity> {
     }
   }
 
-  void setField(String itemId, String fieldName, dynamic value) async {
+  Future<void> setField(String itemId, String fieldName, dynamic value) async {
     await databaseService.setField(itemId, fieldName, value);
     final updatedItem = await databaseService.fetchById(itemId);
     cache.cache(updatedItem);
@@ -118,7 +118,11 @@ class Cache<T extends Entity> {
         .toList();
   }
 
-  void delete(T item) {
-    itemIdsToItems.removeWhere((key, value) => key == item.id);
+  void deleteById(String itemId) {
+    itemIdsToItems.removeWhere((key, value) => key == itemId);
+  }
+
+  void clear() {
+    itemIdsToItems.clear();
   }
 }

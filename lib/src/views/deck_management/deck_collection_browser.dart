@@ -1,3 +1,9 @@
+import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
+import 'package:flashcard_desktop_app/src/notifiers/deck_collection_list_notifier.dart';
+import 'package:flashcard_desktop_app/src/notifiers/deck_collection_notifier.dart';
+import 'package:flashcard_desktop_app/src/notifiers/deck_list_notifier.dart';
+import 'package:flashcard_desktop_app/src/providers/app_state_providers.dart';
+import 'package:flashcard_desktop_app/src/providers/deck_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -16,16 +22,22 @@ class DeckCollectionBrowser extends ConsumerStatefulWidget {
 class _DeckCollectionBrowserState extends ConsumerState<DeckCollectionBrowser> {
   GlobalKey<NavigatorState> navigationKey = GlobalKey();
 
-  List<String> selectedDirectoryIds = [];
-
-  void onDeleteCollection(DeckCollection dc) async {
-    await ref.read(deleteDeckCollectionProvider(dc));
+  @override
+  void initState() {
+    super.initState();
+/*     
+    final notifier = ref.watch(deckCollectionListNotifierProvider.notifier);
+    notifier.getDeckCollections(); */
   }
 
+  List<String> selectedDirectoryIds = [];
+
   Future<void> onAddDeckCollection(BuildContext context) async {
-    var dc = await navigationKey.currentState!.pushNamed('/new');
+    var dc =
+        await navigationKey.currentState!.pushNamed('/new') as DeckCollection?;
     if (dc != null) {
-      await ref.read(addDeckCollectionProvider(dc as DeckCollection));
+      final notifier = ref.read(deckCollectionListNotifierProvider.notifier);
+      await notifier.addDeckCollection(dc);
     }
   }
 
@@ -53,7 +65,10 @@ class _DeckCollectionBrowserState extends ConsumerState<DeckCollectionBrowser> {
         if (name != null && name.startsWith('/collection')) {
           final id = name.split('/').last;
           return MaterialPageRoute<DeckCollection?>(builder: (_) {
-            return DeckBrowser(id);
+            return ProviderScope(overrides: [
+              getCurrentDeckCollectionIdProvider.overrideWithValue(id),
+              getCurrentPathProvider.overrideWithValue(''),
+            ], child: DeckBrowser());
           });
         }
 
@@ -152,15 +167,16 @@ class _DeckCollectionBrowserState extends ConsumerState<DeckCollectionBrowser> {
       )); */
 
   Widget _buildDeckCollectionList(BuildContext context) {
-    final deckCollections = ref.watch(deckCollectionsProvider);
+    final deckCollectionsNotifier =
+        ref.watch(deckCollectionListNotifierProvider);
 
     return Stack(
       fit: StackFit.expand,
       alignment: Alignment.center,
       children: [
-        deckCollections.when(
-            data: (data) {
-              return data.isEmpty
+        deckCollectionsNotifier.when(
+            data: (deckCollectionIds) {
+              return deckCollectionIds.isEmpty
                   ? InkWell(
                       onTap: () => onAddDeckCollection(context),
                       child: Center(
@@ -175,20 +191,49 @@ class _DeckCollectionBrowserState extends ConsumerState<DeckCollectionBrowser> {
                     )
                   : ListView(
                       shrinkWrap: true,
-                      children: data
-                          .map((e) => ListTile(
-                                onTap: () => navigationKey.currentState!
-                                    .pushNamed('/collection/${e.id}'),
-                                title: Text(e.name!), //Text(e.name!),
-                                trailing: IconButton(
-                                    onPressed: () => onDeleteCollection(e),
-                                    icon: Icon(Icons.delete)),
-                              ))
-                          .toList());
+                      children: deckCollectionIds.map((dcid) {
+                        return ProviderScope(
+                          overrides: [
+                            getCurrentDeckCollectionIdProvider
+                                .overrideWithValue(dcid)
+                          ],
+                          child: DeckCollectionListItem((id) => navigationKey
+                              .currentState!
+                              .pushNamed('/collection/$id')),
+                        );
+                      }).toList());
             },
             loading: () => CircularProgressIndicator(),
-            error: (e, _) => Text(e.toString()))
+            error: (e, _) => Text(e.toString() + " : " + _.toString()))
       ],
     );
+  }
+}
+
+class DeckCollectionListItem extends ConsumerWidget {
+  void Function(String) onTap;
+
+  DeckCollectionListItem(this.onTap, {super.key});
+
+  Future<void> onDeleteCollection(WidgetRef ref, String collectionId) async {
+    final notifier = ref.read(deckCollectionListNotifierProvider.notifier);
+    await notifier.deleteDeckCollection(collectionId);
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final id = ref.watch(getCurrentDeckCollectionIdProvider);
+    final notifier = ref.watch(deckCollectionNotifierProvider(id));
+
+    return notifier.when(
+        data: (dc) => ListTile(
+              onTap: () => onTap(id),
+              title: Text(dc.name!), //Text(e.name!),
+              trailing: IconButton(
+                  onPressed: () => onDeleteCollection(ref, dc.id!),
+                  icon: Icon(Icons.delete)),
+            ),
+        error: (e, _) => Text(e.toString()),
+        loading: () => CircularProgressIndicator());
   }
 }

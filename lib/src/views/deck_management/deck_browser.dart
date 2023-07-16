@@ -1,5 +1,13 @@
+import 'dart:math';
+
 import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
+import 'package:flashcard_desktop_app/src/custom/extensions/riverpod_extensions.dart';
 import 'package:flashcard_desktop_app/src/custom/widgets/pathed_tree.dart';
+import 'package:flashcard_desktop_app/src/notifiers/deck_collection_list_notifier.dart';
+import 'package:flashcard_desktop_app/src/notifiers/deck_collection_notifier.dart';
+import 'package:flashcard_desktop_app/src/notifiers/deck_list_notifier.dart';
+import 'package:flashcard_desktop_app/src/providers/app_state_providers.dart';
+import 'package:flashcard_desktop_app/src/views/deck_management/deck_collection_browser.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_treeview/flutter_treeview.dart';
@@ -10,177 +18,162 @@ import '../../model/entities/deck_collection.dart';
 import '../../providers/deck_collection_providers.dart';
 import '../../providers/deck_providers.dart';
 
-final currentDeckCollectionProvider = Provider<DeckCollection>((ref) {
-  throw UnimplementedError('currentDeckCollectionProvider');
-});
+  void onAddDeck(WidgetRef ref) async {
+    final id = ref.read(getCurrentDeckCollectionIdProvider);
 
-final currentDecksProvider = Provider<List<Deck>>((ref) {
-  throw UnimplementedError('currentDecksProvider');
-});
+    final r = Random();
+    final newDeck =
+        Deck(null, 'Deck ${r.nextInt(100)}', r.nextInt(1000), DateTime.now());
 
-final deckCollectionProvider =
-    FutureProvider.family<DeckCollection, String>((ref, id) async {
-  await Future.delayed(Duration(seconds: 1));
-  return DeckCollection('0', null, 'name 0', {}, true);
-});
-final decksProvider =
-    FutureProvider.family<List<Deck>, Iterable<String>>((ref, id) async {
-  await Future.delayed(Duration(seconds: 1));
-  return [];
-});
+    final notifier = ref.read(deckCollectionListNotifierProvider.notifier);
+    final path = ref.read(getCurrentPathProvider);
 
-class DeckBrowser extends ConsumerStatefulWidget {
-  final String collectionId;
-
-  const DeckBrowser(this.collectionId, {super.key});
-
-  @override
-  ConsumerState<DeckBrowser> createState() => _DeckBrowserState();
-}
-
-class _DeckBrowserState extends ConsumerState<DeckBrowser> {
-  String get collectionId => widget.collectionId;
-
-  bool treeViewMode = true;
-
-  @override
-  Widget build(BuildContext context) {
-    final collectionAsync = ref.watch(deckCollectionProvider('collectionId'));
-    final decksAsync = ref.watch(decksProvider([]));
-
-    return Column(
-      children: [
-        Expanded(
-          child: collectionAsync.when(
-              data: (collection) {
-                return ProviderScope(
-                  overrides: [
-                    currentDeckCollectionProvider.overrideWithValue(collection),
-                    currentDecksProvider
-                        .overrideWithValue(decksAsync.value ?? []),
-                  ],
-                  child: TestWidget(),
-                );
-              },
-              error: (e, _) => Text(e.toString()),
-              loading: () => CircularProgressIndicator(color: Colors.blue)),
-        ),
-      ],
-    );
+    await notifier.addDeckToCollection(newDeck, id, path);
   }
 
-/*   @override
-  Widget build(BuildContext context) {
-    return Builder(builder: (context) {
-      final collectionAsync = ref.watch(deckCollectionProvider(collectionId));
-      final decksAsync = ref.watch(
-          decksProvider(collectionAsync.value?.pathsToDeckIds?.values ?? []));
+// TODO: Make it so that I can navigate (and add data to) a pathed directory structure
 
+class DeckBrowser extends ConsumerWidget {
+  DeckBrowser({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final id = ref.watch(getCurrentDeckCollectionIdProvider);
+    final collection = ref.watch(deckCollectionNotifierProvider(id));
+
+    return collection.whenDefault(data: (collection) {
       return Column(
         children: [
           Expanded(
-            child: collectionAsync.when(
-                data: (collection) {
-                  return ProviderScope(
-                    overrides: [
-                      currentDeckCollectionProvider
-                          .overrideWithValue(collection),
-                      currentDecksProvider
-                          .overrideWithValue(decksAsync.value ?? []),
-                    ],
-                    child: Column(
-                      children: [
-                        _buildDeckBrowserTopRow(context),
-                        Flexible(
-                          child: _buildDecksView(context),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-                error: (e, _) => Text(e.toString()),
-                loading: () => CircularProgressIndicator(color: Colors.blue)),
-          ),
+              child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      icon: Icon(Icons.navigate_before)),
+                  Flexible(
+                      child: Text(
+                    collection.name!,
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  )),
+                  IconButton(
+                      onPressed: () {
+                        onAddDeck(ref);
+                      },
+                      icon: Icon(Icons.add))
+                ],
+              ),
+              Flexible(
+                child: DecksListView(),
+              ),
+            ],
+          )),
         ],
       );
     });
+  }
+}
+
+class DecksTreeView extends ConsumerWidget {
+  const DecksTreeView({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final id = ref.watch(getCurrentDeckCollectionIdProvider);
+    final collectionAsync = ref.watch(deckCollectionNotifierProvider(id));
+
+    return collectionAsync.whenDefault(data: (collection) {
+      final deckIds = collection.deckIds;
+
+      if (deckIds.isEmpty) {
+        return Center(
+          child: ElevatedButton(
+              onPressed: () => onAddDeck(ref), child: Text('Add Deck')),
+        );
+      }
+
+      return PathedTree<String>(collection.deckIds,
+          getPath: (id) => collection.deckIdsToPaths[id]!,
+          buildNode: (context, path, deckIdMaybe) {
+            final isData = deckIdMaybe != null;
+
+            final overrides = [getCurrentPathProvider.overrideWithValue(path)];
+            if (isData) {
+              overrides
+                  .add(getCurrentDeckIdProvider.overrideWithValue(deckIdMaybe));
+            }
+
+            return ProviderScope(overrides: overrides, child: DeckTreeItem());
+          });
+    });
+  }
+
+/*   void onAddDeck(WidgetRef ref) {
+/*     final r = Random();
+    ref.read(addDeckProvider(
+        Deck(null, 'Deck ${r.nextInt(100)}', r.nextInt(1000), DateTime.now()))); */
+  } */
+}
+
+class DeckTreeItem extends ConsumerWidget {
+  const DeckTreeItem({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ListTile(title: Text('d?.name' ?? ' - '));
+  }
+}
+
+class DecksListView extends ConsumerWidget {
+  const DecksListView({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final id = ref.watch(getCurrentDeckCollectionIdProvider);
+    final collectionAsync = ref.watch(deckCollectionNotifierProvider(id));
+
+    return collectionAsync.whenDefault(data: (collection) {
+
+      final deckIds = collection.deckIds;
+      if (deckIds.isEmpty) {
+        return ElevatedButton(
+            onPressed: () => onAddDeck(ref), child: Text('Add Deck'));
+      }
+
+      return ListView(
+        children: deckIds
+            .map((id) => ProviderScope(overrides: [
+                  getCurrentPathProvider
+                      .overrideWith((ref) => collection.deckIdsToPaths[id]!),
+                  getCurrentDeckIdProvider.overrideWith((ref) => id),
+                ], child: DecksListItem()))
+            .toList(),
+      );
+    });
+  }
+}
+
+class DecksListItem extends ConsumerWidget {
+  const DecksListItem({
+    super.key,
+  });
+
+/*   void onAddDeck(WidgetRef ref) {
+    final path = ref.watch(getCurrentPathProvider);
+    final deck = ref.watch(getCurrentDeckIdProvider);
+    AppLogger.log(deck + " at " + path);
   } */
 
-  Widget _buildDecksView(BuildContext context) {
-    final collection = ref.watch(currentDeckCollectionProvider);
-    final decksAsync =
-        ref.watch(decksProvider(collection.pathsToDeckIds?.values ?? []));
-
-    return decksAsync.when(
-        data: (decks) {
-          return ProviderScope(
-              overrides: [
-                // decksProvider.overrideWith((ref, it) => decks)
-              ],
-              child: treeViewMode
-                  ? _buildDecksTreeView(context)
-                  : _buildDecksListView(context));
-        },
-        error: (e, _) => Text(e.toString()),
-        loading: () => CircularProgressIndicator());
-  }
-
-  Widget _buildDeckBrowserTopRow(BuildContext context) {
-    final collection = ref.watch(currentDeckCollectionProvider);
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Flexible(
-            child: Text(
-          collection.name!,
-          style: Theme.of(context).textTheme.headlineSmall,
-        )),
-        IconButton(
-            onPressed: () {
-              throw UnimplementedError();
-            },
-            icon: Icon(Icons.add))
-      ],
-    );
-  }
-
-  Widget _buildDecksListView(
-    BuildContext context,
-  ) {
-    return Column(children: [
-      IconButton(
-          onPressed: () => throw UnimplementedError(), icon: Icon(Icons.close))
-    ]);
-  }
-
-  Widget _buildDecksTreeView(BuildContext context) {
-    final collection = ref.watch(currentDeckCollectionProvider);
-    final decks = ref.watch(currentDecksProvider);
-
-    if (decks.isEmpty) {
-      return ElevatedButton(
-          onPressed: () => throw UnimplementedError(), child: Text('Add Deck'));
-    }
-
-    return PathedTree(decks,
-        getPath: (d) => collection.pathsToDeckIds![d.id]!,
-        buildNode: (context, d) {
-          return ListTile(title: Text(d?.name ?? ' - '));
-        });
-  }
-}
-
-class TestWidget extends ConsumerStatefulWidget {
-  const TestWidget({Key? key}) : super(key: key);
-
   @override
-  _TestWidgetState createState() => _TestWidgetState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final path = ref.watch(getCurrentPathProvider);
+    final deck = ref.watch(getCurrentDeckIdProvider);
 
-class _TestWidgetState extends ConsumerState<TestWidget> {
-  @override
-  Widget build(BuildContext context) {
-    return Text(ref.watch(currentDeckCollectionProvider).name!);
+    return ListTile(
+        title: Text(deck + " at " + path), onTap: () {});
   }
 }

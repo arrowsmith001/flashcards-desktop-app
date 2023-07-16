@@ -39,6 +39,7 @@ class LocalJSONDatabaseService<T extends Entity> implements DatabaseService<T> {
           .map((q) => (jsonDecode(q['json']) as Map<String, dynamic>)
             ..addAll({'id': q['id'].toString()}))
           .toList();
+
       return list.map<T>(deserializeDocument).toList();
     } catch (e) {
       AppLogger.log(e);
@@ -48,9 +49,20 @@ class LocalJSONDatabaseService<T extends Entity> implements DatabaseService<T> {
   }
 
   @override
-  Future<T> fetchById(String id) {
-    // TODO: implement fetchById
-    throw UnimplementedError();
+  Future<T> fetchById(String id) async {
+    List<Map<String, dynamic>> queryList =
+        await database.rawQuery('SELECT * FROM $tableName WHERE id = $id');
+
+    try {
+      Map<String, dynamic> q = queryList.single;
+      final json = jsonDecode(q['json']) as Map<String, dynamic>;
+      json.addAll({'id': q['id'].toString()});
+      return deserializeDocument(json);
+    } catch (e) {
+      AppLogger.log(e);
+    }
+
+    throw Exception();
   }
 
   @override
@@ -85,9 +97,15 @@ class LocalJSONDatabaseService<T extends Entity> implements DatabaseService<T> {
   }
 
   @override
-  Future<void> setField(String itemId, String fieldName, value) {
-    // TODO: implement setField
-    throw UnimplementedError();
+  Future<void> setField(String itemId, String fieldName, value) async {
+    List<Map<String, dynamic>> queryList = await database
+        .rawQuery('SELECT * FROM $tableName WHERE id = "$itemId"');
+
+    final q = jsonDecode(queryList.single['json'].toString());
+    q[fieldName] = value;
+
+    await database.rawQuery(
+        "UPDATE $tableName SET json = '${jsonEncode(q)}' WHERE id = '$itemId'");
   }
 
   @override
@@ -103,9 +121,9 @@ class LocalJSONDatabaseService<T extends Entity> implements DatabaseService<T> {
   }
 
   @override
-  Future<void> delete(T item) async {
+  Future<void> delete(String itemId) async {
     final count = await database
-        .rawDelete('DELETE FROM $tableName WHERE id = ${item.id}');
+        .rawDelete('DELETE FROM $tableName WHERE id = ${itemId}');
   }
 }
 

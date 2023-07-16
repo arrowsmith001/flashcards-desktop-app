@@ -25,7 +25,7 @@ class FlashcardAppLocalServices implements AppDatabaseServices {
       databaseFactory = databaseFactoryFfi;
     }
     var dbPath = await getDatabasesPath();
-    String path = '${dbPath}/test9/demo.db';
+    String path = '${dbPath}/test11/demo.db';
 
     await deleteDatabase(path);
 

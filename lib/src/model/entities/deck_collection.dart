@@ -3,34 +3,32 @@ import 'package:riverpod/src/common.dart';
 
 import '../../custom/data/abstract/entity.dart';
 import 'deck.dart';
-//part 'deck_collection.g.dart';
+part 'deck_collection.g.dart';
 
 @JsonSerializable()
 class DeckCollection extends Entity {
+  static String PATHS_TO_DECK_IDS = 'deckIdsToPaths';
+
   final String? creatorUserId;
   final String? name;
-  final Map<String, String>? pathsToDeckIds; // TODO: Refactor to decksToPathIds
+  final Map<String, String> deckIdsToPaths; // TODO: Refactor to decksToPathIds
   final bool? isPrivate;
 
-  static DeckCollection deserialize(Map<String, dynamic> map) => DeckCollection(
-      map['id'],
-      map['creatorUserId'],
-      map['name'],
-      (map['pathsToDeckIds'] as Map<String, dynamic>)
-          .map<String, String>((key, value) => MapEntry(key, value.toString())),
-      map['isPrivate']);
+  static DeckCollection deserialize(Map<String, dynamic> map) =>
+      _$DeckCollectionFromJson(map);
 
-  DeckCollection(super.id, this.creatorUserId, this.name, this.pathsToDeckIds,
+  DeckCollection(super.id, this.creatorUserId, this.name, this.deckIdsToPaths,
       this.isPrivate);
 
   @override
   Map<String, dynamic> serialized() {
-    return {
-      //'id': id,
-      'creatorUserId': creatorUserId,
-      'name': name,
-      'pathsToDeckIds': pathsToDeckIds,
-      'isPrivate': isPrivate
-    };
+    return _$DeckCollectionToJson(this);
+  }
+
+  List<String> get deckIds => deckIdsToPaths.keys.toList();
+
+  static DeckCollection copyFrom(DeckCollection original) {
+    return DeckCollection(original.id, original.creatorUserId, original.name,
+        original.deckIdsToPaths, original.isPrivate);
   }
 }

@@ -4,7 +4,7 @@ import 'entity.dart';
 
 abstract class DatabaseService<T extends Entity> {
   Future<T> create(T item);
-  Future<void> delete(T item);
+  Future<void> delete(String itemId);
 
   Future<List<T>> fetchAll();
   Future<T> fetchById(String id);

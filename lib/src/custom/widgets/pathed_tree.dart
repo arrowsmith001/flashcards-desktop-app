@@ -7,17 +7,17 @@ class PathedTree<T> extends StatelessWidget {
 
   final List<T> dataList;
   final String Function(T) getPath;
-  final Widget Function(BuildContext context, T? nodeData) buildNode;
+  final Widget Function(BuildContext context, String path, T? nodeData) buildNode;
 
   @override
   Widget build(BuildContext context) {
     final controller = TreeViewController(
-      children: buildTree().children,
+      children: [buildTree()],
     );
     return TreeView(
         controller: controller,
         nodeBuilder: (context, node) {
-          return buildNode.call(context, node.data as T?);
+          return buildNode.call(context, node.key, node.data as T?);
         });
   }
 

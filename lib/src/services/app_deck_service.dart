@@ -1,4 +1,5 @@
 import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
+import 'package:flashcard_desktop_app/src/providers/deck_providers.dart';
 
 import '../custom/data/abstract/auth_service.dart';
 import '../custom/data/abstract/repository.dart';
@@ -15,7 +16,7 @@ class AppDeckService {
   final Repository<Deck> deckRepo;
   final Repository<Flashcard> flashcardRepo;
 
-  Future<List<DeckCollection>> getAllCollections() async {
+  Future<List<DeckCollection>> getAllDeckCollections() async {
     return await deckCollectionRepo.getAll();
   }
 
@@ -25,11 +26,11 @@ class AppDeckService {
     return c;
   }
 
-  Future<void> deleteCollection(DeckCollection collection) async {
-    await deckCollectionRepo.deleteItem(collection);
+  Future<void> deleteCollection(String deckCollectionId) async {
+    await deckCollectionRepo.deleteItem(deckCollectionId);
   }
 
-  Future<DeckCollection> getCollectionById(String id) async {
+  Future<DeckCollection> getDeckCollectionById(String id) async {
     return await deckCollectionRepo.getItemById(id);
   }
 
@@ -40,4 +41,19 @@ class AppDeckService {
   Future<List<Deck>> getDecksByIds(Iterable<String> ids) async {
     return await deckRepo.getItemsById(ids);
   }
+
+  Future<Deck> addDeck(Deck deck) async {
+    final d = await deckRepo.createItem(deck);
+    return d;
+  }
+
+  Future<void> addDeckToCollection(
+      Deck deck, DeckCollection collection, String path) async {
+    final newDeck = await deckRepo.createItem(deck);
+    await deckCollectionRepo.setField(
+        collection.id!,
+        DeckCollection.PATHS_TO_DECK_IDS,
+        collection.deckIdsToPaths..addAll({newDeck.id!: path}));
+  }
+
 }

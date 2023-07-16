@@ -41,10 +41,11 @@ final deckRepoProvider =
 final deckCollectionRepoProvider =
     Provider<Repository<DeckCollection>>((ref) => throw UnimplementedError());
 
-final deckServiceProvider =
+final dbServiceProvider =
     Provider<AppDeckService>((ref) => throw UnimplementedError());
 
 void main() async {
+
   WidgetsFlutterBinding.ensureInitialized();
 
   FlutterError.demangleStackTrace = (StackTrace stack) {
@@ -72,7 +73,7 @@ void main() async {
     deckRepoProvider.overrideWith((ref) => Repository(services.deckService)),
     deckCollectionRepoProvider
         .overrideWith((ref) => Repository(services.deckCollectionService)),
-    deckServiceProvider.overrideWith((ref) => AppDeckService(
+    dbServiceProvider.overrideWith((ref) => AppDeckService(
         ref.read(authServiceProvider),
         ref.read(deckCollectionRepoProvider),
         ref.read(deckRepoProvider),
