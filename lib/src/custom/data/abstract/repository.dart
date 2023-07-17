@@ -42,7 +42,7 @@ class Repository<T extends Entity> {
   Future<List<T>> getAll() async {
     final fetchedItems = await databaseService.fetchAll();
     cache.cacheAll(fetchedItems);
-  /*   fetchedItems.forEach((element) {
+    /*   fetchedItems.forEach((element) {
       AppLogger.log(element.serialized().toString());
     }); */
     return fetchedItems;
@@ -72,7 +72,7 @@ class Repository<T extends Entity> {
     cache.cache(updatedItem);
   }
 
-  Future<List<T>> getItemsById(Iterable<String> itemIds) async {
+  Future<List<T>> getItemsByIds(Iterable<String> itemIds) async {
     if (itemIds.isEmpty) return [];
     final cachedItems = cache.getAsMany(itemIds);
     final cachedItemIds = cachedItems.map((e) => e.id);

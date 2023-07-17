@@ -11,7 +11,7 @@ class DeckCollection extends Entity {
 
   final String? creatorUserId;
   final String? name;
-  final Map<String, String> deckIdsToPaths; // TODO: Refactor to decksToPathIds
+  final Map<String, String> deckIdsToPaths;
   final bool? isPrivate;
 
   static DeckCollection deserialize(Map<String, dynamic> map) =>
@@ -26,6 +26,7 @@ class DeckCollection extends Entity {
   }
 
   List<String> get deckIds => deckIdsToPaths.keys.toList();
+  List<String> get paths => deckIdsToPaths.values.toList();
 
   static DeckCollection copyFrom(DeckCollection original) {
     return DeckCollection(original.id, original.creatorUserId, original.name,

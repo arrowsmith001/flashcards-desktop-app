@@ -2,7 +2,6 @@
 import 'package:flashcard_desktop_app/src/model/entities/deck.dart';
 import 'package:flashcard_desktop_app/src/model/entities/deck_collection.dart';
 import 'package:flashcard_desktop_app/src/notifiers/deck_collection_list_notifier.dart';
-import 'package:flashcard_desktop_app/src/notifiers/deck_list_notifier.dart';
 import 'package:flashcard_desktop_app/src/providers/deck_collection_providers.dart';
 import 'package:flashcard_desktop_app/src/providers/deck_providers.dart';
 import 'package:flutter/widgets.dart';

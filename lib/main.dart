@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:flashcard_desktop_app/src/services/fake_repositories/deck.dart';
+import 'package:flashcard_desktop_app/src/services/fake_repositories/deck_collection.dart';
 import 'package:stack_trace/stack_trace.dart' as stack_trace;
 import 'package:firedart/firedart.dart';
 import 'package:flashcard_desktop_app/src/classes/app_config.dart';
@@ -63,26 +65,36 @@ void main() async {
   final services = FlashcardAppLocalServices();
   await services.initialize(config);
 
-  runApp(ProviderScope(overrides: [
+  runApp(ProviderScope(
+    overrides: [
+
     windowManagerProvider.overrideWith((ref) => wm),
     appConfigProvider.overrideWith((ref) => config),
     authServiceProvider.overrideWith((ref) => services.authService),
+
     userRepoProvider.overrideWith((ref) => Repository(services.userService)),
     flashcardRepoProvider
         .overrideWith((ref) => Repository(services.flashcardService)),
-    deckRepoProvider.overrideWith((ref) => Repository(services.deckService)),
+
+/*     deckRepoProvider.overrideWith((ref) => Repository(services.deckService)),
     deckCollectionRepoProvider
-        .overrideWith((ref) => Repository(services.deckCollectionService)),
+        .overrideWith((ref) => Repository(services.deckCollectionService)), */
+        
+        deckCollectionRepoProvider.overrideWithValue(FakeDeckCollectionRepository()),
+        deckRepoProvider.overrideWithValue(FakeDeckRepository()),
+
     dbServiceProvider.overrideWith((ref) => AppDeckService(
         ref.read(authServiceProvider),
         ref.read(deckCollectionRepoProvider),
         ref.read(deckRepoProvider),
         ref.read(flashcardRepoProvider))),
 
-    // FAKES
-    //deckCollectionProvider.overrideWithProvider(fakeDeckCollectionProvider),
-    //decksProvider.overrideWithProvider(fakeDecksProvider),
-  ], child: MyApp()));
+  ], child: ProviderScope(
+      overrides: [
+        deckCollectionRepoProvider.overrideWithValue(FakeDeckCollectionRepository()),
+        deckRepoProvider.overrideWithValue(FakeDeckRepository())
+      ],
+    child: MyApp())));
 }
 
 void firebase(config, auth, AppDatabaseServices services) async {

@@ -1,7 +1,6 @@
 import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
 import 'package:flashcard_desktop_app/src/notifiers/deck_collection_list_notifier.dart';
 import 'package:flashcard_desktop_app/src/notifiers/deck_collection_notifier.dart';
-import 'package:flashcard_desktop_app/src/notifiers/deck_list_notifier.dart';
 import 'package:flashcard_desktop_app/src/providers/app_state_providers.dart';
 import 'package:flashcard_desktop_app/src/providers/deck_providers.dart';
 import 'package:flutter/material.dart';
@@ -65,10 +64,12 @@ class _DeckCollectionBrowserState extends ConsumerState<DeckCollectionBrowser> {
         if (name != null && name.startsWith('/collection')) {
           final id = name.split('/').last;
           return MaterialPageRoute<DeckCollection?>(builder: (_) {
+
             return ProviderScope(overrides: [
               getCurrentDeckCollectionIdProvider.overrideWithValue(id),
               getCurrentPathProvider.overrideWithValue(''),
             ], child: DeckBrowser());
+
           });
         }
 

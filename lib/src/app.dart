@@ -7,6 +7,7 @@ import 'package:flashcard_desktop_app/src/custom/style/minimal_theme.dart';
 import 'package:flashcard_desktop_app/src/views/main_view.dart';
 import 'package:flashcard_desktop_app/src/window/app_window_manager.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -46,6 +47,7 @@ class MyApp extends StatelessWidget {
 
   MaterialApp _buildApp(ThemeData theme) {
     return MaterialApp(
+      scrollBehavior: MyCustomScrollBehavior(),
             theme: theme,
             onGenerateRoute: RouteGenerator.generateRoute,
             initialRoute: RouteGenerator.mainRoute);
@@ -53,3 +55,13 @@ class MyApp extends StatelessWidget {
 
 }
 
+
+class MyCustomScrollBehavior extends MaterialScrollBehavior {
+  // Override behavior methods and getters like dragDevices
+  @override
+  Set<PointerDeviceKind> get dragDevices => { 
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+    // etc.
+  };
+}

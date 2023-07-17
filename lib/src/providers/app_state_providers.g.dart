@@ -52,4 +52,20 @@ final getCurrentPathProvider = Provider<String>.internal(
 );
 
 typedef GetCurrentPathRef = ProviderRef<String>;
+String _$getCurrentlySelectedDeckIdsHash() =>
+    r'd41e1f46ede072783e583cefdddd1371ba876b28';
+
+/// See also [getCurrentlySelectedDeckIds].
+@ProviderFor(getCurrentlySelectedDeckIds)
+final getCurrentlySelectedDeckIdsProvider = Provider<List<String>>.internal(
+  getCurrentlySelectedDeckIds,
+  name: r'getCurrentlySelectedDeckIdsProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$getCurrentlySelectedDeckIdsHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef GetCurrentlySelectedDeckIdsRef = ProviderRef<List<String>>;
 // ignore_for_file: unnecessary_raw_strings, subtype_of_sealed_class, invalid_use_of_internal_member, do_not_use_environment, prefer_const_constructors, public_member_api_docs, avoid_private_typedef_functions

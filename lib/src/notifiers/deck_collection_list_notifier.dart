@@ -3,7 +3,6 @@ import 'dart:convert';
 
 import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
 import 'package:flashcard_desktop_app/src/notifiers/deck_collection_notifier.dart';
-import 'package:flashcard_desktop_app/src/notifiers/deck_list_notifier.dart';
 import 'package:flashcard_desktop_app/src/providers/app_state_providers.dart';
 import 'package:flashcard_desktop_app/src/providers/deck_collection_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,13 +13,11 @@ import '../model/entities/deck.dart';
 import '../model/entities/deck_collection.dart';
 import '../services/app_deck_service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-//part 'deck_collection_list_notifier.g.dart';
+part 'deck_collection_list_notifier.g.dart';
 
-// TODO: Fix family notifier...
-// TODO: Add user parameter
 
-//@Riverpod(keepAlive: true)
-class DeckCollectionListNotifier extends AsyncNotifier<List<String>> {
+@Riverpod(keepAlive: true)
+class DeckCollectionListNotifier extends _$DeckCollectionListNotifier {
   String? selectedDeckCollectionId;
 
   @override
@@ -76,8 +73,3 @@ class DeckCollectionListNotifier extends AsyncNotifier<List<String>> {
         .toList(); // TODO: Get this list from user.deckCollections instead!
   }
 }
-
-final deckCollectionListNotifierProvider =
-    AsyncNotifierProvider<DeckCollectionListNotifier, List<String>>(() {
-  return DeckCollectionListNotifier();
-});

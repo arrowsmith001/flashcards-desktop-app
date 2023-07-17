@@ -13,19 +13,17 @@ import '../model/entities/deck_collection.dart';
 import '../services/app_deck_service.dart';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-//part 'deck_collection_notifier.g.dart';
+part 'deck_collection_notifier.g.dart';
 
-//@Riverpod(keepAlive: true)
+@Riverpod(keepAlive: true)
 class DeckCollectionNotifier
-    extends FamilyAsyncNotifier<DeckCollection, String> {
-
+    extends _$DeckCollectionNotifier {
   @override
   FutureOr<DeckCollection> build(String arg) async {
     return await _getDeckCollection(arg);
   }
 
   Future<void> addDeckToCollection(Deck deck, String path) async {
-
     try {
       final currentCollection = DeckCollection.copyFrom(state.value!);
 
@@ -41,22 +39,7 @@ class DeckCollectionNotifier
     }
   }
 
-/*   Future<void> deleteDeckCollection() async {
-    final currentCollection = DeckCollection.copyFrom(state.value!);
-
-    state = AsyncLoading();
-
-    await ref.read(deleteDeckCollectionProvider(currentCollection).future);
-
-    state = AsyncError(Exception('<deleted>'), StackTrace.current);
-  } */
-
   Future<DeckCollection> _getDeckCollection(String id) async {
     return await ref.read(getDeckCollectionByIdProvider(id).future);
   }
 }
-
-final deckCollectionNotifierProvider = AsyncNotifierProvider.family<
-    DeckCollectionNotifier, DeckCollection, String>(() {
-  return DeckCollectionNotifier();
-});

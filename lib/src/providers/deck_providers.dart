@@ -3,7 +3,6 @@ import 'dart:math';
 
 import 'package:flashcard_desktop_app/src/model/entities/deck_collection.dart';
 import 'package:flashcard_desktop_app/src/notifiers/deck_collection_list_notifier.dart';
-import 'package:flashcard_desktop_app/src/notifiers/deck_list_notifier.dart';
 import 'package:flashcard_desktop_app/src/providers/app_state_providers.dart';
 import 'package:flashcard_desktop_app/src/providers/deck_collection_providers.dart';
 import 'package:flashcard_desktop_app/src/services/app_deck_service.dart';

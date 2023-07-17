@@ -13,12 +13,12 @@ import '../model/entities/deck_collection.dart';
 import '../services/app_deck_service.dart';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-//part 'deck_notifier.g.dart';
+part 'deck_notifier.g.dart';
 
 // TODO: Implement
 
-//@Riverpod(keepAlive: true)
-class DeckNotifier extends FamilyAsyncNotifier<Deck, String> {
+@Riverpod(keepAlive: true)
+class DeckNotifier extends _$DeckNotifier {
 
   @override
   FutureOr<Deck> build(String arg) async {
@@ -53,9 +53,3 @@ class DeckNotifier extends FamilyAsyncNotifier<Deck, String> {
     return state.value?.map((e) => e.state).toList() ?? [];
   } */
 }
-
-
-
-final deckNotifierProvider = AsyncNotifierProvider.family<DeckNotifier, Deck, String>(() {
-  return DeckNotifier();
-});

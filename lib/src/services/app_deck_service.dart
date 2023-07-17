@@ -39,7 +39,7 @@ class AppDeckService {
   }
 
   Future<List<Deck>> getDecksByIds(Iterable<String> ids) async {
-    return await deckRepo.getItemsById(ids);
+    return await deckRepo.getItemsByIds(ids);
   }
 
   Future<Deck> addDeck(Deck deck) async {

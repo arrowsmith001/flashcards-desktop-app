@@ -20,8 +20,11 @@ class RouteGenerator {
     final args = (settings.arguments as Map?) ?? {};
     final double windowHeight = args['windowHeight'] ?? 0.0;
     final double windowWidth = args['windowWidth'] ?? 0.0;
+    final name = settings.name;
 
-    switch (settings.name) {
+    AppLogger.log('pushing top-level route: $name');
+
+    switch (name) {
       case entryRoute:
         return PageRouteBuilder(
             transitionDuration: const Duration(milliseconds: 500),
@@ -95,7 +98,7 @@ class RouteGenerator {
             transitionDuration: Duration.zero,
             pageBuilder: (BuildContext context, Animation<double> animation,
                 Animation<double> secondaryAnimation) {
-              return StudyView(args!['flashcardDirectoryIds']);
+              return StudyView(args['flashcardDirectoryIds']);
             });
       case flashcardRoute:
         return PageRouteBuilder<bool>(
