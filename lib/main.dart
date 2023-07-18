@@ -1,7 +1,6 @@
 import 'dart:math';
 
-import 'package:flashcard_desktop_app/src/services/fake_repositories/deck.dart';
-import 'package:flashcard_desktop_app/src/services/fake_repositories/deck_collection.dart';
+import 'package:flashcard_desktop_app/src/services/fake_services.dart';
 import 'package:stack_trace/stack_trace.dart' as stack_trace;
 import 'package:firedart/firedart.dart';
 import 'package:flashcard_desktop_app/src/classes/app_config.dart';
@@ -14,7 +13,7 @@ import 'package:flashcard_desktop_app/src/model/entities/flashcard.dart';
 import 'package:flashcard_desktop_app/src/providers/deck_collection_providers.dart';
 import 'package:flashcard_desktop_app/src/providers/deck_providers.dart';
 import 'package:flashcard_desktop_app/src/services/app_database_services.dart';
-import 'package:flashcard_desktop_app/src/services/app_deck_service.dart';
+import 'package:flashcard_desktop_app/src/services/app_data_service.dart';
 import 'package:flashcard_desktop_app/src/services/implemented/local_services.dart';
 import 'package:flashcard_desktop_app/src/window/app_window_manager.dart';
 import 'package:flutter/material.dart';
@@ -44,7 +43,7 @@ final deckCollectionRepoProvider =
     Provider<Repository<DeckCollection>>((ref) => throw UnimplementedError());
 
 final dbServiceProvider =
-    Provider<AppDeckService>((ref) => throw UnimplementedError());
+    Provider<AppDataService>((ref) => throw UnimplementedError());
 
 void main() async {
 
@@ -76,25 +75,20 @@ void main() async {
     flashcardRepoProvider
         .overrideWith((ref) => Repository(services.flashcardService)),
 
-/*     deckRepoProvider.overrideWith((ref) => Repository(services.deckService)),
+    deckRepoProvider.overrideWith((ref) => Repository(services.deckService)),
     deckCollectionRepoProvider
-        .overrideWith((ref) => Repository(services.deckCollectionService)), */
+        .overrideWith((ref) => Repository(services.deckCollectionService)), 
         
-        deckCollectionRepoProvider.overrideWithValue(FakeDeckCollectionRepository()),
-        deckRepoProvider.overrideWithValue(FakeDeckRepository()),
 
-    dbServiceProvider.overrideWith((ref) => AppDeckService(
-        ref.read(authServiceProvider),
-        ref.read(deckCollectionRepoProvider),
-        ref.read(deckRepoProvider),
-        ref.read(flashcardRepoProvider))),
+/*     dbServiceProvider.overrideWith((ref) => AppDeckService(
+       authRepo: ref.read(authServiceProvider),
+       deckCollectionRepo:  ref.read(deckCollectionRepoProvider),
+       deckRepo:  ref.read(deckRepoProvider),
+       flashcardRepo:  ref.read(flashcardRepoProvider))), */
 
-  ], child: ProviderScope(
-      overrides: [
-        deckCollectionRepoProvider.overrideWithValue(FakeDeckCollectionRepository()),
-        deckRepoProvider.overrideWithValue(FakeDeckRepository())
-      ],
-    child: MyApp())));
+    dbServiceProvider.overrideWith((ref) => FakeAppDeckService()),
+
+  ], child: MyApp()));
 }
 
 void firebase(config, auth, AppDatabaseServices services) async {

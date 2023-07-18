@@ -57,7 +57,7 @@ class _StudyPrepDeckEntryListItemState
     final deckId = ref.watch(getCurrentDeckIdProvider);
     final deckAsync = ref.watch(deckNotifierProvider(deckId));
 
-    return deckAsync.whenDefault(data: (deck) {
+    return deckAsync.whenDefault((deck) {
       return Card(
         elevation: 5,
         child: Padding(

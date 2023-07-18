@@ -191,19 +191,4 @@ class GetDeckByIdProvider extends AutoDisposeFutureProvider<Deck> {
     return _SystemHash.finish(hash);
   }
 }
-
-String _$getFakeDecksHash() => r'cc8261cb0d7019edf497dfd104ce9cbdbaed09dd';
-
-/// See also [getFakeDecks].
-@ProviderFor(getFakeDecks)
-final getFakeDecksProvider = AutoDisposeProvider<List<Deck>>.internal(
-  getFakeDecks,
-  name: r'getFakeDecksProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$getFakeDecksHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-typedef GetFakeDecksRef = AutoDisposeProviderRef<List<Deck>>;
 // ignore_for_file: unnecessary_raw_strings, subtype_of_sealed_class, invalid_use_of_internal_member, do_not_use_environment, prefer_const_constructors, public_member_api_docs, avoid_private_typedef_functions

@@ -9,7 +9,7 @@ import 'package:tuple/tuple.dart';
 import '../../main.dart';
 import '../model/entities/deck.dart';
 import '../model/entities/deck_collection.dart';
-import '../services/app_deck_service.dart';
+import '../services/app_data_service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'deck_collection_providers.g.dart';
 
@@ -21,8 +21,7 @@ Future<DeckCollection> addDeckCollection(
 }
 
 @riverpod
-Future<List<DeckCollection>> getAllDeckCollections(
-    Ref ref) async {
+Future<List<DeckCollection>> getAllDeckCollections(Ref ref) async {
   final dbService = ref.watch(dbServiceProvider);
   return await dbService.getAllDeckCollections();
 }
@@ -35,27 +34,26 @@ Future<List<DeckCollection>> getDeckCollectionsByIds(
 }
 
 @riverpod
-Future<DeckCollection> getDeckCollectionById(
-    Ref ref, String id) async {
+Future<DeckCollection> getDeckCollectionById(Ref ref, String id) async {
   final dbService = ref.watch(dbServiceProvider);
-  return await dbService.getDeckCollectionById(id); 
+  return await dbService.getDeckCollectionById(id);
 }
 
 @riverpod
-Future<void> deleteDeckCollection(
-    Ref ref, String deckCollectionId) async {
+Future<void> deleteDeckCollection(Ref ref, String deckCollectionId) async {
   final dbService = ref.watch(dbServiceProvider);
   await dbService.deleteCollection(deckCollectionId);
 }
 
 @riverpod
-Future<void> addDeckToCollection(
+Future<void> addDeckAndAddToCollection(
     Ref ref, Deck deck, DeckCollection deckCollection, String path) async {
   final dbService = ref.watch(dbServiceProvider);
-  await dbService
-      .addDeckToCollection(deck, deckCollection, path);
+
+  final deckWithId = await dbService.addDeck(deck);
+  await dbService.addDeckToCollection(deckWithId, deckCollection, path);
 }
 
 @riverpod
 DeckCollection getFakeDeckCollection(Ref ref) => DeckCollection(
-        'id', null, 'name', {'0': 'a', '1': 'a/b', '2': 'a/c'}, true);
+    'id', null, 'name', {'0': 'a', '1': 'a/b', '2': 'a/c'}, true);

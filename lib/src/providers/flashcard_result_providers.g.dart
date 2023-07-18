@@ -1,12 +1,13 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'deck_notifier.dart';
+part of 'flashcard_result_providers.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$deckNotifierHash() => r'c6fc9a9a106f2436ce71b1eef56e218ea949f143';
+String _$getFlashcardResultByIdHash() =>
+    r'47491010ca52f9c80ce45ba00f35fa453f6fd603';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -29,38 +30,33 @@ class _SystemHash {
   }
 }
 
-abstract class _$DeckNotifier extends BuildlessAsyncNotifier<Deck> {
-  late final String arg;
+typedef GetFlashcardResultByIdRef
+    = AutoDisposeFutureProviderRef<FlashcardResult>;
 
-  FutureOr<Deck> build(
-    String arg,
-  );
-}
+/// See also [getFlashcardResultById].
+@ProviderFor(getFlashcardResultById)
+const getFlashcardResultByIdProvider = GetFlashcardResultByIdFamily();
 
-/// See also [DeckNotifier].
-@ProviderFor(DeckNotifier)
-const deckNotifierProvider = DeckNotifierFamily();
+/// See also [getFlashcardResultById].
+class GetFlashcardResultByIdFamily extends Family<AsyncValue<FlashcardResult>> {
+  /// See also [getFlashcardResultById].
+  const GetFlashcardResultByIdFamily();
 
-/// See also [DeckNotifier].
-class DeckNotifierFamily extends Family<AsyncValue<Deck>> {
-  /// See also [DeckNotifier].
-  const DeckNotifierFamily();
-
-  /// See also [DeckNotifier].
-  DeckNotifierProvider call(
-    String arg,
+  /// See also [getFlashcardResultById].
+  GetFlashcardResultByIdProvider call(
+    String flashcardResultId,
   ) {
-    return DeckNotifierProvider(
-      arg,
+    return GetFlashcardResultByIdProvider(
+      flashcardResultId,
     );
   }
 
   @override
-  DeckNotifierProvider getProviderOverride(
-    covariant DeckNotifierProvider provider,
+  GetFlashcardResultByIdProvider getProviderOverride(
+    covariant GetFlashcardResultByIdProvider provider,
   ) {
     return call(
-      provider.arg,
+      provider.flashcardResultId,
     );
   }
 
@@ -76,50 +72,45 @@ class DeckNotifierFamily extends Family<AsyncValue<Deck>> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'deckNotifierProvider';
+  String? get name => r'getFlashcardResultByIdProvider';
 }
 
-/// See also [DeckNotifier].
-class DeckNotifierProvider
-    extends AsyncNotifierProviderImpl<DeckNotifier, Deck> {
-  /// See also [DeckNotifier].
-  DeckNotifierProvider(
-    this.arg,
+/// See also [getFlashcardResultById].
+class GetFlashcardResultByIdProvider
+    extends AutoDisposeFutureProvider<FlashcardResult> {
+  /// See also [getFlashcardResultById].
+  GetFlashcardResultByIdProvider(
+    this.flashcardResultId,
   ) : super.internal(
-          () => DeckNotifier()..arg = arg,
-          from: deckNotifierProvider,
-          name: r'deckNotifierProvider',
+          (ref) => getFlashcardResultById(
+            ref,
+            flashcardResultId,
+          ),
+          from: getFlashcardResultByIdProvider,
+          name: r'getFlashcardResultByIdProvider',
           debugGetCreateSourceHash:
               const bool.fromEnvironment('dart.vm.product')
                   ? null
-                  : _$deckNotifierHash,
-          dependencies: DeckNotifierFamily._dependencies,
+                  : _$getFlashcardResultByIdHash,
+          dependencies: GetFlashcardResultByIdFamily._dependencies,
           allTransitiveDependencies:
-              DeckNotifierFamily._allTransitiveDependencies,
+              GetFlashcardResultByIdFamily._allTransitiveDependencies,
         );
 
-  final String arg;
+  final String flashcardResultId;
 
   @override
   bool operator ==(Object other) {
-    return other is DeckNotifierProvider && other.arg == arg;
+    return other is GetFlashcardResultByIdProvider &&
+        other.flashcardResultId == flashcardResultId;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, arg.hashCode);
+    hash = _SystemHash.combine(hash, flashcardResultId.hashCode);
 
     return _SystemHash.finish(hash);
-  }
-
-  @override
-  FutureOr<Deck> runNotifierBuild(
-    covariant DeckNotifier notifier,
-  ) {
-    return notifier.build(
-      arg,
-    );
   }
 }
 // ignore_for_file: unnecessary_raw_strings, subtype_of_sealed_class, invalid_use_of_internal_member, do_not_use_environment, prefer_const_constructors, public_member_api_docs, avoid_private_typedef_functions

@@ -1,5 +1,6 @@
 import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
 import 'package:flashcard_desktop_app/src/model/entities/flashcard.dart';
+import 'package:flashcard_desktop_app/src/providers/app_state_providers.dart';
 import 'package:flashcard_desktop_app/src/views/deck_management/deck_management_view.dart';
 import 'package:flashcard_desktop_app/src/views/flashcard_view.dart';
 import 'package:flashcard_desktop_app/src/views/main_view.dart';
@@ -7,6 +8,7 @@ import 'package:flashcard_desktop_app/src/views/study_view.dart';
 import 'package:flashcard_desktop_app/src/window/app_window_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../views/login_view.dart';
 
@@ -98,15 +100,27 @@ class RouteGenerator {
             transitionDuration: Duration.zero,
             pageBuilder: (BuildContext context, Animation<double> animation,
                 Animation<double> secondaryAnimation) {
-              return StudyView(args['flashcardDirectoryIds']);
+
+              final deckIds = args['deckIds'];
+              return ProviderScope(
+                overrides: [
+                  getCurrentlySelectedDeckIdsProvider.overrideWithValue(deckIds)
+                ],
+                child: StudyView());
             });
       case flashcardRoute:
         return PageRouteBuilder<bool>(
             transitionDuration: Duration.zero,
             pageBuilder: (BuildContext context, Animation<double> animation,
                 Animation<double> secondaryAnimation) {
-              final flashcard = Flashcard.deserialize(args!['flashcard']);
-              return FlashcardView(flashcard);
+
+              final String flashcardId = args['flashcardId'];
+              return ProviderScope(
+                overrides: [
+                  getCurrentFlashcardIdProvider.overrideWithValue(flashcardId)
+                ],
+                child: FlashcardView());
+
             });
     }
 

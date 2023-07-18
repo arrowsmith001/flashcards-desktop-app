@@ -29,13 +29,11 @@ void onAddDeck(WidgetRef ref) async {
   final id = ref.read(getCurrentDeckCollectionIdProvider);
 
   final r = Random();
-  final newDeck =
-      Deck(null, 'Deck ${r.nextInt(100)}', r.nextInt(1000), DateTime.now());
 
   final notifier = ref.read(deckCollectionListNotifierProvider.notifier);
   final path = ref.read(getCurrentPathProvider);
 
-  await notifier.addDeckToCollection(newDeck, id, path);
+  //await notifier.addDeckToCollection(newDeck, id, path);
 }
 
 void onAddSubfolder(WidgetRef ref, String folderName) async {
@@ -54,7 +52,7 @@ class DeckBrowser extends ConsumerWidget {
     final id = ref.watch(getCurrentDeckCollectionIdProvider);
     final collection = ref.watch(deckCollectionNotifierProvider(id));
 
-    return collection.whenDefault(data: (collection) {
+    return collection.whenDefault((collection) {
       return Column(
         children: [
           Expanded(
@@ -114,7 +112,7 @@ class DecksTreeView extends ConsumerWidget {
     final id = ref.watch(getCurrentDeckCollectionIdProvider);
     final collectionAsync = ref.watch(deckCollectionNotifierProvider(id));
 
-    return collectionAsync.whenDefault(data: (collection) {
+    return collectionAsync.whenDefault((collection) {
       final deckIds = collection.deckIds;
 
       if (deckIds.isEmpty) {
@@ -168,7 +166,7 @@ class DecksListView extends ConsumerWidget {
     final collectionAsync =
         ref.watch(deckCollectionNotifierProvider(colllectionId));
 
-    return collectionAsync.whenDefault(data: (collection) {
+    return collectionAsync.whenDefault((collection) {
       // Paths to other folders
       final relativePathsFromHere =
           getRelativePathsFromPath(collection, currentPath);
@@ -349,7 +347,7 @@ class DeckEntryListItem extends ConsumerWidget {
 
     final deckNotifier = ref.watch(deckNotifierProvider(deckId));
 
-    return deckNotifier.whenDefault(data: (deck) {
+    return deckNotifier.whenDefault((deck) {
       final selectedNotifier =
           ref.watch(selectedDecksListNotifierProvider.notifier);
       final selected = ref.watch(selectedDecksListNotifierProvider);

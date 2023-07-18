@@ -37,6 +37,22 @@ final getCurrentDeckIdProvider = Provider<String>.internal(
 );
 
 typedef GetCurrentDeckIdRef = ProviderRef<String>;
+String _$getCurrentFlashcardIdHash() =>
+    r'b1bff609b315bed18e806b01d4884ab9d286824b';
+
+/// See also [getCurrentFlashcardId].
+@ProviderFor(getCurrentFlashcardId)
+final getCurrentFlashcardIdProvider = Provider<String>.internal(
+  getCurrentFlashcardId,
+  name: r'getCurrentFlashcardIdProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$getCurrentFlashcardIdHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef GetCurrentFlashcardIdRef = ProviderRef<String>;
 String _$getCurrentPathHash() => r'4e882ab7a583b9483d3c346abcd798326cfdb4e1';
 
 /// See also [getCurrentPath].

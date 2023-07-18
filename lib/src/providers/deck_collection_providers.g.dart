@@ -384,26 +384,26 @@ class DeleteDeckCollectionProvider extends AutoDisposeFutureProvider<void> {
   }
 }
 
-String _$addDeckToCollectionHash() =>
-    r'b791e5b4a0e0d5a82246837cd66b0868e2763549';
-typedef AddDeckToCollectionRef = AutoDisposeFutureProviderRef<void>;
+String _$addDeckAndAddToCollectionHash() =>
+    r'ee6642f248dc6372b4d08615d3ac488f96bc5833';
+typedef AddDeckAndAddToCollectionRef = AutoDisposeFutureProviderRef<void>;
 
-/// See also [addDeckToCollection].
-@ProviderFor(addDeckToCollection)
-const addDeckToCollectionProvider = AddDeckToCollectionFamily();
+/// See also [addDeckAndAddToCollection].
+@ProviderFor(addDeckAndAddToCollection)
+const addDeckAndAddToCollectionProvider = AddDeckAndAddToCollectionFamily();
 
-/// See also [addDeckToCollection].
-class AddDeckToCollectionFamily extends Family<AsyncValue<void>> {
-  /// See also [addDeckToCollection].
-  const AddDeckToCollectionFamily();
+/// See also [addDeckAndAddToCollection].
+class AddDeckAndAddToCollectionFamily extends Family<AsyncValue<void>> {
+  /// See also [addDeckAndAddToCollection].
+  const AddDeckAndAddToCollectionFamily();
 
-  /// See also [addDeckToCollection].
-  AddDeckToCollectionProvider call(
+  /// See also [addDeckAndAddToCollection].
+  AddDeckAndAddToCollectionProvider call(
     Deck deck,
     DeckCollection deckCollection,
     String path,
   ) {
-    return AddDeckToCollectionProvider(
+    return AddDeckAndAddToCollectionProvider(
       deck,
       deckCollection,
       path,
@@ -411,8 +411,8 @@ class AddDeckToCollectionFamily extends Family<AsyncValue<void>> {
   }
 
   @override
-  AddDeckToCollectionProvider getProviderOverride(
-    covariant AddDeckToCollectionProvider provider,
+  AddDeckAndAddToCollectionProvider getProviderOverride(
+    covariant AddDeckAndAddToCollectionProvider provider,
   ) {
     return call(
       provider.deck,
@@ -433,32 +433,33 @@ class AddDeckToCollectionFamily extends Family<AsyncValue<void>> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'addDeckToCollectionProvider';
+  String? get name => r'addDeckAndAddToCollectionProvider';
 }
 
-/// See also [addDeckToCollection].
-class AddDeckToCollectionProvider extends AutoDisposeFutureProvider<void> {
-  /// See also [addDeckToCollection].
-  AddDeckToCollectionProvider(
+/// See also [addDeckAndAddToCollection].
+class AddDeckAndAddToCollectionProvider
+    extends AutoDisposeFutureProvider<void> {
+  /// See also [addDeckAndAddToCollection].
+  AddDeckAndAddToCollectionProvider(
     this.deck,
     this.deckCollection,
     this.path,
   ) : super.internal(
-          (ref) => addDeckToCollection(
+          (ref) => addDeckAndAddToCollection(
             ref,
             deck,
             deckCollection,
             path,
           ),
-          from: addDeckToCollectionProvider,
-          name: r'addDeckToCollectionProvider',
+          from: addDeckAndAddToCollectionProvider,
+          name: r'addDeckAndAddToCollectionProvider',
           debugGetCreateSourceHash:
               const bool.fromEnvironment('dart.vm.product')
                   ? null
-                  : _$addDeckToCollectionHash,
-          dependencies: AddDeckToCollectionFamily._dependencies,
+                  : _$addDeckAndAddToCollectionHash,
+          dependencies: AddDeckAndAddToCollectionFamily._dependencies,
           allTransitiveDependencies:
-              AddDeckToCollectionFamily._allTransitiveDependencies,
+              AddDeckAndAddToCollectionFamily._allTransitiveDependencies,
         );
 
   final Deck deck;
@@ -467,7 +468,7 @@ class AddDeckToCollectionProvider extends AutoDisposeFutureProvider<void> {
 
   @override
   bool operator ==(Object other) {
-    return other is AddDeckToCollectionProvider &&
+    return other is AddDeckAndAddToCollectionProvider &&
         other.deck == deck &&
         other.deckCollection == deckCollection &&
         other.path == path;

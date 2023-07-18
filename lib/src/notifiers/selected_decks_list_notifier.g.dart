@@ -7,7 +7,7 @@ part of 'selected_decks_list_notifier.dart';
 // **************************************************************************
 
 String _$selectedDecksListNotifierHash() =>
-    r'8005a528335b25017296567b168c279d3639288e';
+    r'a6ab9e874402ec39072e89a1f027656b6f4a27a7';
 
 /// See also [SelectedDecksListNotifier].
 @ProviderFor(SelectedDecksListNotifier)

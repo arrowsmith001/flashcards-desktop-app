@@ -126,3 +126,4 @@ class Cache<T extends Entity> {
     itemIdsToItems.clear();
   }
 }
+

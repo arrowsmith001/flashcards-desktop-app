@@ -22,6 +22,10 @@ String getCurrentDeckId(Ref ref) =>
     throw UnimplementedError('getCurrentDeckId');
 
 @Riverpod(keepAlive: true)
+String getCurrentFlashcardId(Ref ref) =>
+    throw UnimplementedError('getCurrentFlashcardId');
+
+@Riverpod(keepAlive: true)
 String getCurrentPath(Ref ref) => throw UnimplementedError('getCurrentPath');
 
 @Riverpod(keepAlive: true)

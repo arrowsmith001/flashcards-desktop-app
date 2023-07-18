@@ -1,13 +1,12 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'deck_collection_notifier.dart';
+part of 'flashcard_notifier.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$deckCollectionNotifierHash() =>
-    r'29838fcecaa8dfe3532d2e9638b02c48a84af5cf';
+String _$flashcardNotifierHash() => r'd459e02ec17925de17cb99c5537ed50c8444232b';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -30,36 +29,35 @@ class _SystemHash {
   }
 }
 
-abstract class _$DeckCollectionNotifier
-    extends BuildlessAsyncNotifier<DeckCollection> {
+abstract class _$FlashcardNotifier extends BuildlessAsyncNotifier<Flashcard> {
   late final String arg;
 
-  FutureOr<DeckCollection> build(
+  FutureOr<Flashcard> build(
     String arg,
   );
 }
 
-/// See also [DeckCollectionNotifier].
-@ProviderFor(DeckCollectionNotifier)
-const deckCollectionNotifierProvider = DeckCollectionNotifierFamily();
+/// See also [FlashcardNotifier].
+@ProviderFor(FlashcardNotifier)
+const flashcardNotifierProvider = FlashcardNotifierFamily();
 
-/// See also [DeckCollectionNotifier].
-class DeckCollectionNotifierFamily extends Family<AsyncValue<DeckCollection>> {
-  /// See also [DeckCollectionNotifier].
-  const DeckCollectionNotifierFamily();
+/// See also [FlashcardNotifier].
+class FlashcardNotifierFamily extends Family<AsyncValue<Flashcard>> {
+  /// See also [FlashcardNotifier].
+  const FlashcardNotifierFamily();
 
-  /// See also [DeckCollectionNotifier].
-  DeckCollectionNotifierProvider call(
+  /// See also [FlashcardNotifier].
+  FlashcardNotifierProvider call(
     String arg,
   ) {
-    return DeckCollectionNotifierProvider(
+    return FlashcardNotifierProvider(
       arg,
     );
   }
 
   @override
-  DeckCollectionNotifierProvider getProviderOverride(
-    covariant DeckCollectionNotifierProvider provider,
+  FlashcardNotifierProvider getProviderOverride(
+    covariant FlashcardNotifierProvider provider,
   ) {
     return call(
       provider.arg,
@@ -78,33 +76,33 @@ class DeckCollectionNotifierFamily extends Family<AsyncValue<DeckCollection>> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'deckCollectionNotifierProvider';
+  String? get name => r'flashcardNotifierProvider';
 }
 
-/// See also [DeckCollectionNotifier].
-class DeckCollectionNotifierProvider
-    extends AsyncNotifierProviderImpl<DeckCollectionNotifier, DeckCollection> {
-  /// See also [DeckCollectionNotifier].
-  DeckCollectionNotifierProvider(
+/// See also [FlashcardNotifier].
+class FlashcardNotifierProvider
+    extends AsyncNotifierProviderImpl<FlashcardNotifier, Flashcard> {
+  /// See also [FlashcardNotifier].
+  FlashcardNotifierProvider(
     this.arg,
   ) : super.internal(
-          () => DeckCollectionNotifier()..arg = arg,
-          from: deckCollectionNotifierProvider,
-          name: r'deckCollectionNotifierProvider',
+          () => FlashcardNotifier()..arg = arg,
+          from: flashcardNotifierProvider,
+          name: r'flashcardNotifierProvider',
           debugGetCreateSourceHash:
               const bool.fromEnvironment('dart.vm.product')
                   ? null
-                  : _$deckCollectionNotifierHash,
-          dependencies: DeckCollectionNotifierFamily._dependencies,
+                  : _$flashcardNotifierHash,
+          dependencies: FlashcardNotifierFamily._dependencies,
           allTransitiveDependencies:
-              DeckCollectionNotifierFamily._allTransitiveDependencies,
+              FlashcardNotifierFamily._allTransitiveDependencies,
         );
 
   final String arg;
 
   @override
   bool operator ==(Object other) {
-    return other is DeckCollectionNotifierProvider && other.arg == arg;
+    return other is FlashcardNotifierProvider && other.arg == arg;
   }
 
   @override
@@ -116,8 +114,8 @@ class DeckCollectionNotifierProvider
   }
 
   @override
-  FutureOr<DeckCollection> runNotifierBuild(
-    covariant DeckCollectionNotifier notifier,
+  FutureOr<Flashcard> runNotifierBuild(
+    covariant FlashcardNotifier notifier,
   ) {
     return notifier.build(
       arg,

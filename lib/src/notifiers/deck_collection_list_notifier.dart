@@ -11,7 +11,7 @@ import 'package:tuple/tuple.dart';
 import '../../main.dart';
 import '../model/entities/deck.dart';
 import '../model/entities/deck_collection.dart';
-import '../services/app_deck_service.dart';
+import '../services/app_data_service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'deck_collection_list_notifier.g.dart';
 

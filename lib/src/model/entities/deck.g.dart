@@ -9,13 +9,13 @@ part of 'deck.dart';
 Deck _$DeckFromJson(Map<String, dynamic> json) => Deck(
       json['id'] as String?,
       json['name'] as String?,
-      json['numberOfCards'] as int,
+      (json['flashcards'] as List<dynamic>).map((e) => e as String).toList(),
       DateTime.parse(json['lastUpdatedTimestamp'] as String),
     );
 
 Map<String, dynamic> _$DeckToJson(Deck instance) => <String, dynamic>{
       'id': instance.id,
       'name': instance.name,
-      'numberOfCards': instance.numberOfCards,
+      'flashcards': instance.flashcards,
       'lastUpdatedTimestamp': instance.lastUpdatedTimestamp.toIso8601String(),
     };

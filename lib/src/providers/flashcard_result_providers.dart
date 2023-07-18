@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flashcard_desktop_app/src/model/entities/deck_collection.dart';
+import 'package:flashcard_desktop_app/src/model/entities/flashcard.dart';
+import 'package:flashcard_desktop_app/src/model/entities/flashcard_result.dart';
 import 'package:flashcard_desktop_app/src/notifiers/deck_collection_list_notifier.dart';
 import 'package:flashcard_desktop_app/src/providers/app_state_providers.dart';
 import 'package:flashcard_desktop_app/src/providers/deck_collection_providers.dart';
@@ -13,25 +15,10 @@ import 'package:tuple/tuple.dart';
 import '../../main.dart';
 import '../model/entities/deck.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-part 'deck_providers.g.dart';
-
-/* final getAllDecksProvider = FutureProvider.autoDispose
-    .family<List<Deck>, String>((ref, userId) async {
-  final dbService = ref.watch(dbServiceProvider);
-  final r = await dbService.getAllCollections();
-  return r;
-}); */
+part 'flashcard_result_providers.g.dart';
 
 @riverpod
-Future<List<Deck>> getDecksByIds(Ref ref, List<String> deckIds) async {
+Future<FlashcardResult> getFlashcardResultById(Ref ref, String flashcardResultId) async {
   final dbService = ref.watch(dbServiceProvider);
-  return await dbService.getDecksByIds(deckIds);
+  return await dbService.getFlashcardResultById(flashcardResultId);
 }
-
-@riverpod
-Future<Deck> getDeckById(Ref ref, String deckId) async {
-  final dbService = ref.watch(dbServiceProvider);
-  return await dbService.getDeckById(deckId);
-}
-
-

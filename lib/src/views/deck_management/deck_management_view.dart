@@ -7,6 +7,7 @@ import 'package:flashcard_desktop_app/src/custom/widgets/card_window.dart';
 import 'package:flashcard_desktop_app/src/model/entities/deck_collection.dart';
 import 'package:flashcard_desktop_app/src/navigation/route_generator.dart';
 import 'package:flashcard_desktop_app/src/notifiers/selected_decks_list_notifier.dart';
+import 'package:flashcard_desktop_app/src/notifiers/study_session_notifier.dart';
 import 'package:flashcard_desktop_app/src/providers/deck_providers.dart';
 import 'package:flashcard_desktop_app/src/services/app_database_services.dart';
 import 'package:flashcard_desktop_app/src/views/deck_management/study_prep_window.dart';
@@ -20,7 +21,7 @@ import '../../model/entities/deck.dart';
 import '../../model/entities/flashcard.dart';
 import '../../model/entities/user.dart';
 import '../../providers/deck_collection_providers.dart';
-import '../../services/app_deck_service.dart';
+import '../../services/app_data_service.dart';
 import '../../window/app_window_manager.dart';
 import 'deck_browser.dart';
 import 'deck_collection_browser.dart';
@@ -130,7 +131,7 @@ class _DeckManagementViewState extends ConsumerState<DeckManagementView>
                 ),
               ),
 
-              // Testing stuff
+              // Testing
               Slider(
                   value: ratio,
                   onChanged: (value) {
@@ -155,14 +156,16 @@ class _DeckManagementViewState extends ConsumerState<DeckManagementView>
     });
   }
 
-  void onBeginStudy(context) {
+  void onBeginStudy(context) async {
     final AppWindowManager wm = ref.watch(windowManagerProvider);
 
     final selectedIds = ref.read(selectedDecksListNotifierProvider);
+    
+    ref.invalidate(studySessionNotifierProvider);
 
-    Navigator.pushNamed(context, RouteGenerator.studyRoute, arguments: {
-      'flashcardDirectoryIds': selectedIds,
-      'windowSize': wm.currentSize
+    await Navigator.pushNamed(context, RouteGenerator.studyRoute, arguments: {
+      'deckIds': selectedIds
     });
+    
   }
 }

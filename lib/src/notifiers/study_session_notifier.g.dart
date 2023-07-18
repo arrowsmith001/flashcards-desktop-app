@@ -1,13 +1,13 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'deck_collection_notifier.dart';
+part of 'study_session_notifier.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$deckCollectionNotifierHash() =>
-    r'29838fcecaa8dfe3532d2e9638b02c48a84af5cf';
+String _$studySessionNotifierHash() =>
+    r'2c65a43aa0fe2c76e1695d6f60df9cd1f1cffc9b';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -30,36 +30,36 @@ class _SystemHash {
   }
 }
 
-abstract class _$DeckCollectionNotifier
-    extends BuildlessAsyncNotifier<DeckCollection> {
-  late final String arg;
+abstract class _$StudySessionNotifier
+    extends BuildlessAsyncNotifier<StudySession> {
+  late final List<String> arg;
 
-  FutureOr<DeckCollection> build(
-    String arg,
+  FutureOr<StudySession> build(
+    List<String> arg,
   );
 }
 
-/// See also [DeckCollectionNotifier].
-@ProviderFor(DeckCollectionNotifier)
-const deckCollectionNotifierProvider = DeckCollectionNotifierFamily();
+/// See also [StudySessionNotifier].
+@ProviderFor(StudySessionNotifier)
+const studySessionNotifierProvider = StudySessionNotifierFamily();
 
-/// See also [DeckCollectionNotifier].
-class DeckCollectionNotifierFamily extends Family<AsyncValue<DeckCollection>> {
-  /// See also [DeckCollectionNotifier].
-  const DeckCollectionNotifierFamily();
+/// See also [StudySessionNotifier].
+class StudySessionNotifierFamily extends Family<AsyncValue<StudySession>> {
+  /// See also [StudySessionNotifier].
+  const StudySessionNotifierFamily();
 
-  /// See also [DeckCollectionNotifier].
-  DeckCollectionNotifierProvider call(
-    String arg,
+  /// See also [StudySessionNotifier].
+  StudySessionNotifierProvider call(
+    List<String> arg,
   ) {
-    return DeckCollectionNotifierProvider(
+    return StudySessionNotifierProvider(
       arg,
     );
   }
 
   @override
-  DeckCollectionNotifierProvider getProviderOverride(
-    covariant DeckCollectionNotifierProvider provider,
+  StudySessionNotifierProvider getProviderOverride(
+    covariant StudySessionNotifierProvider provider,
   ) {
     return call(
       provider.arg,
@@ -78,33 +78,33 @@ class DeckCollectionNotifierFamily extends Family<AsyncValue<DeckCollection>> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'deckCollectionNotifierProvider';
+  String? get name => r'studySessionNotifierProvider';
 }
 
-/// See also [DeckCollectionNotifier].
-class DeckCollectionNotifierProvider
-    extends AsyncNotifierProviderImpl<DeckCollectionNotifier, DeckCollection> {
-  /// See also [DeckCollectionNotifier].
-  DeckCollectionNotifierProvider(
+/// See also [StudySessionNotifier].
+class StudySessionNotifierProvider
+    extends AsyncNotifierProviderImpl<StudySessionNotifier, StudySession> {
+  /// See also [StudySessionNotifier].
+  StudySessionNotifierProvider(
     this.arg,
   ) : super.internal(
-          () => DeckCollectionNotifier()..arg = arg,
-          from: deckCollectionNotifierProvider,
-          name: r'deckCollectionNotifierProvider',
+          () => StudySessionNotifier()..arg = arg,
+          from: studySessionNotifierProvider,
+          name: r'studySessionNotifierProvider',
           debugGetCreateSourceHash:
               const bool.fromEnvironment('dart.vm.product')
                   ? null
-                  : _$deckCollectionNotifierHash,
-          dependencies: DeckCollectionNotifierFamily._dependencies,
+                  : _$studySessionNotifierHash,
+          dependencies: StudySessionNotifierFamily._dependencies,
           allTransitiveDependencies:
-              DeckCollectionNotifierFamily._allTransitiveDependencies,
+              StudySessionNotifierFamily._allTransitiveDependencies,
         );
 
-  final String arg;
+  final List<String> arg;
 
   @override
   bool operator ==(Object other) {
-    return other is DeckCollectionNotifierProvider && other.arg == arg;
+    return other is StudySessionNotifierProvider && other.arg == arg;
   }
 
   @override
@@ -116,8 +116,8 @@ class DeckCollectionNotifierProvider
   }
 
   @override
-  FutureOr<DeckCollection> runNotifierBuild(
-    covariant DeckCollectionNotifier notifier,
+  FutureOr<StudySession> runNotifierBuild(
+    covariant StudySessionNotifier notifier,
   ) {
     return notifier.build(
       arg,

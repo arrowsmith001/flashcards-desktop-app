@@ -28,8 +28,12 @@ class DeckCollection extends Entity {
   List<String> get deckIds => deckIdsToPaths.keys.toList();
   List<String> get paths => deckIdsToPaths.values.toList();
 
-  static DeckCollection copyFrom(DeckCollection original) {
-    return DeckCollection(original.id, original.creatorUserId, original.name,
-        original.deckIdsToPaths, original.isPrivate);
+  @override
+  DeckCollection clone() {
+    return DeckCollection(id, creatorUserId, name, deckIdsToPaths, isPrivate);
   }
+
+  @override
+  DeckCollection cloneWithId(String newId) =>
+      deserialize(serialized()..update('id', (value) => newId));
 }

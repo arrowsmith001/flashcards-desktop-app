@@ -10,7 +10,7 @@ import 'package:tuple/tuple.dart';
 import '../../main.dart';
 import '../model/entities/deck.dart';
 import '../model/entities/deck_collection.dart';
-import '../services/app_deck_service.dart';
+import '../services/app_data_service.dart';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'deck_collection_notifier.g.dart';
@@ -25,12 +25,12 @@ class DeckCollectionNotifier
 
   Future<void> addDeckToCollection(Deck deck, String path) async {
     try {
-      final currentCollection = DeckCollection.copyFrom(state.value!);
+      final currentCollection = state.value!.clone();
 
       state = AsyncLoading();
 
       await ref.read(
-          addDeckToCollectionProvider(deck, currentCollection, path).future);
+          addDeckAndAddToCollectionProvider(deck, currentCollection, path).future);
       final deckCollection = await _getDeckCollection(currentCollection.id!);
 
       state = AsyncData(deckCollection);

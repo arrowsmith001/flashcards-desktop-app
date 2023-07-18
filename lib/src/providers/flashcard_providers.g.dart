@@ -1,12 +1,12 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'deck_notifier.dart';
+part of 'flashcard_providers.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$deckNotifierHash() => r'c6fc9a9a106f2436ce71b1eef56e218ea949f143';
+String _$getFlashcardByIdHash() => r'46396b1805f7063defae00ace3af599cf8743b14';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -29,38 +29,32 @@ class _SystemHash {
   }
 }
 
-abstract class _$DeckNotifier extends BuildlessAsyncNotifier<Deck> {
-  late final String arg;
+typedef GetFlashcardByIdRef = AutoDisposeFutureProviderRef<Flashcard>;
 
-  FutureOr<Deck> build(
-    String arg,
-  );
-}
+/// See also [getFlashcardById].
+@ProviderFor(getFlashcardById)
+const getFlashcardByIdProvider = GetFlashcardByIdFamily();
 
-/// See also [DeckNotifier].
-@ProviderFor(DeckNotifier)
-const deckNotifierProvider = DeckNotifierFamily();
+/// See also [getFlashcardById].
+class GetFlashcardByIdFamily extends Family<AsyncValue<Flashcard>> {
+  /// See also [getFlashcardById].
+  const GetFlashcardByIdFamily();
 
-/// See also [DeckNotifier].
-class DeckNotifierFamily extends Family<AsyncValue<Deck>> {
-  /// See also [DeckNotifier].
-  const DeckNotifierFamily();
-
-  /// See also [DeckNotifier].
-  DeckNotifierProvider call(
-    String arg,
+  /// See also [getFlashcardById].
+  GetFlashcardByIdProvider call(
+    String flashcardId,
   ) {
-    return DeckNotifierProvider(
-      arg,
+    return GetFlashcardByIdProvider(
+      flashcardId,
     );
   }
 
   @override
-  DeckNotifierProvider getProviderOverride(
-    covariant DeckNotifierProvider provider,
+  GetFlashcardByIdProvider getProviderOverride(
+    covariant GetFlashcardByIdProvider provider,
   ) {
     return call(
-      provider.arg,
+      provider.flashcardId,
     );
   }
 
@@ -76,50 +70,44 @@ class DeckNotifierFamily extends Family<AsyncValue<Deck>> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'deckNotifierProvider';
+  String? get name => r'getFlashcardByIdProvider';
 }
 
-/// See also [DeckNotifier].
-class DeckNotifierProvider
-    extends AsyncNotifierProviderImpl<DeckNotifier, Deck> {
-  /// See also [DeckNotifier].
-  DeckNotifierProvider(
-    this.arg,
+/// See also [getFlashcardById].
+class GetFlashcardByIdProvider extends AutoDisposeFutureProvider<Flashcard> {
+  /// See also [getFlashcardById].
+  GetFlashcardByIdProvider(
+    this.flashcardId,
   ) : super.internal(
-          () => DeckNotifier()..arg = arg,
-          from: deckNotifierProvider,
-          name: r'deckNotifierProvider',
+          (ref) => getFlashcardById(
+            ref,
+            flashcardId,
+          ),
+          from: getFlashcardByIdProvider,
+          name: r'getFlashcardByIdProvider',
           debugGetCreateSourceHash:
               const bool.fromEnvironment('dart.vm.product')
                   ? null
-                  : _$deckNotifierHash,
-          dependencies: DeckNotifierFamily._dependencies,
+                  : _$getFlashcardByIdHash,
+          dependencies: GetFlashcardByIdFamily._dependencies,
           allTransitiveDependencies:
-              DeckNotifierFamily._allTransitiveDependencies,
+              GetFlashcardByIdFamily._allTransitiveDependencies,
         );
 
-  final String arg;
+  final String flashcardId;
 
   @override
   bool operator ==(Object other) {
-    return other is DeckNotifierProvider && other.arg == arg;
+    return other is GetFlashcardByIdProvider &&
+        other.flashcardId == flashcardId;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, arg.hashCode);
+    hash = _SystemHash.combine(hash, flashcardId.hashCode);
 
     return _SystemHash.finish(hash);
-  }
-
-  @override
-  FutureOr<Deck> runNotifierBuild(
-    covariant DeckNotifier notifier,
-  ) {
-    return notifier.build(
-      arg,
-    );
   }
 }
 // ignore_for_file: unnecessary_raw_strings, subtype_of_sealed_class, invalid_use_of_internal_member, do_not_use_environment, prefer_const_constructors, public_member_api_docs, avoid_private_typedef_functions
