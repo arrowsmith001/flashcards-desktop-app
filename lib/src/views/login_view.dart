@@ -3,7 +3,8 @@ import 'package:flashcard_desktop_app/main.dart';
 import 'package:flashcard_desktop_app/src/classes/app_config.dart';
 import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
 import 'package:flashcard_desktop_app/src/custom/data/abstract/auth_service.dart';
-import 'package:flashcard_desktop_app/src/navigation/route_generator.dart';
+import 'package:flashcard_desktop_app/src/navigation/top_level_routes.dart';
+import 'package:flashcard_desktop_app/src/providers/app_service_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -74,7 +75,7 @@ class _LoginViewState extends ConsumerState<LoginView> {
 
    void navigateToMain(){
     final AppWindowManager wm = ref.watch(windowManagerProvider);
-    Navigator.pushNamed(context, RouteGenerator.mainRoute, arguments: {'windowWidth' : wm.currentSize.width});
+    Navigator.pushNamed(context, TopLevelRoutes.mainRoute, arguments: {'windowWidth' : wm.currentSize.width});
   }
 
   @override

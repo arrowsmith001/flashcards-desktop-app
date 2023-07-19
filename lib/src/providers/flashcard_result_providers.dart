@@ -11,6 +11,7 @@ import 'package:flashcard_desktop_app/src/services/app_data_service.dart';
 import 'package:flashcard_desktop_app/src/views/deck_management/deck_collection_browser.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tuple/tuple.dart';
+import 'package:flashcard_desktop_app/src/providers/app_service_providers.dart';
 
 import '../../main.dart';
 import '../model/entities/deck.dart';

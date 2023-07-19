@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
 import 'package:flashcard_desktop_app/src/notifiers/deck_collection_list_notifier.dart';
+import 'package:flashcard_desktop_app/src/providers/app_service_providers.dart';
 import 'package:flashcard_desktop_app/src/providers/app_state_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tuple/tuple.dart';

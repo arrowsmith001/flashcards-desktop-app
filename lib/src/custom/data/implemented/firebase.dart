@@ -66,7 +66,6 @@ class FirebaseDatabaseService<T extends Entity> implements DatabaseService<T> {
 
   @override
   Future<void> delete(String itemId) {
-    // TODO: implement delete
     throw UnimplementedError();
   }
 }

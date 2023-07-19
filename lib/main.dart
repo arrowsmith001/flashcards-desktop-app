@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flashcard_desktop_app/src/providers/app_service_providers.dart';
 import 'package:flashcard_desktop_app/src/services/fake_services.dart';
 import 'package:stack_trace/stack_trace.dart' as stack_trace;
 import 'package:firedart/firedart.dart';
@@ -26,24 +27,6 @@ import 'src/model/entities/deck.dart';
 import 'src/model/entities/deck_collection.dart';
 import 'src/model/entities/user.dart';
 
-final windowManagerProvider =
-    Provider<AppWindowManager>((ref) => throw UnimplementedError());
-final appConfigProvider =
-    Provider<AppConfig>((ref) => throw UnimplementedError());
-
-final authServiceProvider =
-    Provider<AuthService>((ref) => throw UnimplementedError());
-final userRepoProvider =
-    Provider<Repository<User>>((ref) => throw UnimplementedError());
-final flashcardRepoProvider =
-    Provider<Repository<Flashcard>>((ref) => throw UnimplementedError());
-final deckRepoProvider =
-    Provider<Repository<Deck>>((ref) => throw UnimplementedError());
-final deckCollectionRepoProvider =
-    Provider<Repository<DeckCollection>>((ref) => throw UnimplementedError());
-
-final dbServiceProvider =
-    Provider<AppDataService>((ref) => throw UnimplementedError());
 
 void main() async {
 

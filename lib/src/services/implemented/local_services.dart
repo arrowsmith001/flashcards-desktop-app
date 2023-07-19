@@ -18,7 +18,7 @@ import '../../custom/data/abstract/entity.dart';
 class FlashcardAppLocalServices implements AppDatabaseServices {
   @override
   Future<void> initialize(AppConfig config) async {
-    // TODO: Implement disposable pattern
+    // TODO: disposable pattern
 
     if (Platform.isWindows) {
       sqfliteFfiInit();

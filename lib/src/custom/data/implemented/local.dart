@@ -85,14 +85,14 @@ class LocalJSONDatabaseService<T extends Entity> implements DatabaseService<T> {
 
   @override
   Future<List<T>> fetchWhere(String field, String value) {
-    // TODO: implement fetchWhere
+    
     throw UnimplementedError();
   }
 
   @override
   Future<Map<String, List<T>>> fetchWhereMultiple(
       String field, Iterable<String> values) {
-    // TODO: implement fetchWhereMultiple
+    
     throw UnimplementedError();
   }
 

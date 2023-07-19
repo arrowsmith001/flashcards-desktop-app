@@ -11,8 +11,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'app_state_providers.g.dart';
 
-/* final getCurrentDeckCollectionIdProvider =
-    Provider<String>(getCurrentDeckCollectionId); */
 @Riverpod(keepAlive: true)
 String getCurrentDeckCollectionId(Ref ref) =>
     throw UnimplementedError('getCurrentDeckCollectionId');

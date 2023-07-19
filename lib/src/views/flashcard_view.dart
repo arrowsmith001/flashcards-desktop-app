@@ -4,6 +4,8 @@ import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
 import 'package:flashcard_desktop_app/src/custom/extensions/riverpod_extensions.dart';
 import 'package:flashcard_desktop_app/src/model/entities/flashcard.dart';
 import 'package:flashcard_desktop_app/src/notifiers/flashcard_notifier.dart';
+import 'package:flashcard_desktop_app/src/notifiers/theme_notifier.dart';
+import 'package:flashcard_desktop_app/src/providers/app_service_providers.dart';
 import 'package:flashcard_desktop_app/src/providers/app_state_providers.dart';
 import 'package:flashcard_desktop_app/src/window/app_window_manager.dart';
 import 'package:flutter/foundation.dart';
@@ -59,6 +61,7 @@ class _FlashcardViewState extends ConsumerState<FlashcardView>
   @override
   void initState() {
     super.initState();
+
     final wm = ref.read(windowManagerProvider);
 
     _entryAnimationController = AnimationController(
@@ -80,7 +83,9 @@ class _FlashcardViewState extends ConsumerState<FlashcardView>
 
     wm
         .setNotificationModeSizeAndPosition()
-        .then((v) => _entryAnimationController.animateTo(0));
+        .then(
+            (_) => ref.read(themeNotifierProvider.notifier).setFlashcardTheme())
+        .then((_) => _entryAnimationController.animateTo(0));
   }
 
   @override
@@ -121,73 +126,84 @@ class _FlashcardViewState extends ConsumerState<FlashcardView>
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8.0),
                 child: Scaffold(
-                    body: flashcardAsync.whenDefault((data) => buildFlashcard(context))),
+                    body: flashcardAsync
+                        .whenDefault((data) => buildFlashcard(context))),
               ),
             ));
   }
 
   double get windowWidth => AppWindowManager.notificationModeSize.width;
 
+  bool get isPromptShowing => transitionAnim.value < 0.5;
+  bool get isResponseShowing => transitionAnim.value > 0.5;
+
   Widget buildFlashcard(BuildContext context) {
-    return InkWell(
-      onTap: () => onTap(),
-      child: Row(children: [
-        Expanded(
-            child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Stack(
-            children: [
-              Transform.translate(
-                  offset: Offset(0, -windowWidth * transitionAnim.value),
-                  child: buildPrompt(context)),
-              Transform.translate(
-                  offset: Offset(0, windowWidth * (1 - transitionAnim.value)),
-                  child: buildResponse(context)),
-            ],
-          ),
-        )),
-        Stack(children: [
-          Opacity(
-            opacity: clampDouble((1 - transitionAnim.value), 0, 1),
-            child: Column(children: [
-              Expanded(
-                child: Container(
-                  width: 50,
-                  decoration: const BoxDecoration(shape: BoxShape.rectangle),
-                  child: const Icon(Icons.ads_click_sharp, color: Colors.black),
-                ),
-              )
-            ]),
-          ),
-          Opacity(
-            opacity: clampDouble(transitionAnim.value, 0, 1),
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
+    return Card(
+      child: InkWell(
+        onTap: () => onTap(),
+        child: Row(children: [
+          Expanded(
+              child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Stack(
+              children: [
+                Transform.translate(
+                    offset: Offset(0, -windowWidth * transitionAnim.value),
+                    child: buildPrompt(context)),
+                Transform.translate(
+                    offset: Offset(0, windowWidth * (1 - transitionAnim.value)),
+                    child: buildResponse(context)),
+              ],
+            ),
+          )),
+          Stack(children: [
+            IgnorePointer(
+              ignoring: !isPromptShowing,
+              child: Opacity(
+                opacity: clampDouble((1 - transitionAnim.value), 0, 1),
+                child: Column(
+                  children: [
                   Expanded(
-                    child: IconButton(
-                      onPressed: () => onTapResponse(true),
-                      icon: Icon(Icons.thumb_up, color: Colors.green),
-/*                     child: Container(decoration: const BoxDecoration(
-                                    shape: BoxShape.rectangle),
-                                child: const Icon(Icons.thumb_up, color: Colors.green),
-                              ), */
-                    ),
-                  ),
-                  Expanded(
-                    child: IconButton(
-                      onPressed: () => onTapResponse(false),
-                      icon: Icon(Icons.thumb_down, color: Colors.red),
-/*                     child: Container(decoration: const BoxDecoration(
-                                    shape: BoxShape.rectangle),
-                                child: const Icon(Icons.thumb_up, color: Colors.green),
-                              ), */
+                    child: Container(
+                      width: 50,
+                      decoration: const BoxDecoration(shape: BoxShape.rectangle),
+                      child:
+                          IconButton(
+                            icon: Icon(Icons.ads_click_sharp, color: Colors.black), 
+                            onPressed: () => onTap(),),
                     ),
                   )
                 ]),
-          )
-        ])
-      ]),
+              ),
+            ),
+            IgnorePointer(
+              ignoring: !isResponseShowing,
+              child: Opacity(
+                opacity: clampDouble(transitionAnim.value, 0, 1),
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Expanded(
+                        child: Container(
+                          width: 50,
+                          child: IconButton(
+                            onPressed: isPromptShowing ? null : () => onTapResponse(true),
+                            icon: Icon(Icons.thumb_up, color: Colors.green),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: IconButton(
+                          onPressed: isPromptShowing ? null : () => onTapResponse(false),
+                          icon: Icon(Icons.thumb_down, color: Colors.red),
+                        ),
+                      )
+                    ]),
+              ),
+            )
+          ])
+        ]),
+      ),
     );
   }
 
@@ -207,7 +223,7 @@ class _FlashcardViewState extends ConsumerState<FlashcardView>
 
   Widget buildResponse(BuildContext context) {
     final Flashcard flashcard = getFlashcardAsync.requireValue;
-    
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [

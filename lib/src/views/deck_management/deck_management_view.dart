@@ -5,7 +5,7 @@ import 'package:firedart/firedart.dart';
 import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
 import 'package:flashcard_desktop_app/src/custom/widgets/card_window.dart';
 import 'package:flashcard_desktop_app/src/model/entities/deck_collection.dart';
-import 'package:flashcard_desktop_app/src/navigation/route_generator.dart';
+import 'package:flashcard_desktop_app/src/navigation/top_level_routes.dart';
 import 'package:flashcard_desktop_app/src/notifiers/selected_decks_list_notifier.dart';
 import 'package:flashcard_desktop_app/src/notifiers/study_session_notifier.dart';
 import 'package:flashcard_desktop_app/src/providers/deck_providers.dart';
@@ -14,8 +14,8 @@ import 'package:flashcard_desktop_app/src/views/deck_management/study_prep_windo
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_treeview/flutter_treeview.dart';
+import 'package:flashcard_desktop_app/src/providers/app_service_providers.dart';
 
-import '../../../main.dart';
 import '../../custom/data/abstract/database_service.dart';
 import '../../model/entities/deck.dart';
 import '../../model/entities/flashcard.dart';
@@ -163,7 +163,7 @@ class _DeckManagementViewState extends ConsumerState<DeckManagementView>
     
     ref.invalidate(studySessionNotifierProvider);
 
-    await Navigator.pushNamed(context, RouteGenerator.studyRoute, arguments: {
+    await Navigator.pushNamed(context, TopLevelRoutes.studyRoute, arguments: {
       'deckIds': selectedIds
     });
     

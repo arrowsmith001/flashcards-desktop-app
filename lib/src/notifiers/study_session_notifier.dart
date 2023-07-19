@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
 import 'package:flashcard_desktop_app/src/custom/data/abstract/repository.dart';
+import 'package:flashcard_desktop_app/src/model/classes/study_session.dart';
 import 'package:flashcard_desktop_app/src/model/entities/flashcard.dart';
 import 'package:flashcard_desktop_app/src/model/entities/flashcard_result.dart';
 import 'package:flashcard_desktop_app/src/notifiers/deck_collection_list_notifier.dart';
@@ -18,50 +19,11 @@ import '../model/entities/deck.dart';
 import '../model/entities/deck_collection.dart';
 import '../services/app_data_service.dart';
 
+import 'package:flashcard_desktop_app/src/providers/app_service_providers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'study_session_notifier.g.dart';
 
-class StudySession {
-  StudySession(this._flashcardIds);
 
-  final Random _rand = Random();
-
-  final List<String> _flashcardIds;
-
-  final List<String> _doneFlashcardIds = [];
-  final List<String> _flashcardResultIds = [];
-
-  Iterable<String> get flashcardResultIds => _flashcardResultIds;
-
-  List<String> get _flashcardsToDoIds => _flashcardIds
-      .where((flashcardId) => !_doneFlashcardIds.contains(flashcardId))
-      .toList();
-
-  String get getRandomUnseenFlashcardId {
-    final flashcardsToDo = _flashcardsToDoIds;
-    if (flashcardsToDo.isEmpty) throw Exception('flashcardsToDo is empty');
-    final randInt = _rand.nextInt(flashcardsToDo.length);
-    return flashcardsToDo[randInt];
-  }
-
-  int _numberCorrect = 0;
-
-  int _numberIncorrect = 0;
-
-  int get numberCorrect => _numberCorrect;
-
-  int get numberIncorrect => _numberIncorrect;
-
-  void logResult(FlashcardResult result) {
-    _doneFlashcardIds.add(result.id!);
-    _flashcardResultIds.add(result.id!);
-
-    if (result.correct)
-      _numberCorrect++;
-    else
-      _numberIncorrect++;
-  }
-}
 
 @Riverpod(keepAlive: true)
 class StudySessionNotifier extends _$StudySessionNotifier {

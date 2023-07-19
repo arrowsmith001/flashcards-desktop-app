@@ -4,11 +4,14 @@ import 'dart:math';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flashcard_desktop_app/src/classes/app_logger.dart';
 import 'package:flashcard_desktop_app/src/custom/extensions/riverpod_extensions.dart';
-import 'package:flashcard_desktop_app/src/navigation/route_generator.dart';
+import 'package:flashcard_desktop_app/src/model/classes/study_session.dart';
+import 'package:flashcard_desktop_app/src/navigation/top_level_routes.dart';
 import 'package:flashcard_desktop_app/src/notifiers/flashcard_notifier.dart';
 import 'package:flashcard_desktop_app/src/notifiers/flashcard_result_notifier.dart';
 import 'package:flashcard_desktop_app/src/notifiers/selected_decks_list_notifier.dart';
 import 'package:flashcard_desktop_app/src/notifiers/study_session_notifier.dart';
+import 'package:flashcard_desktop_app/src/notifiers/theme_notifier.dart';
+import 'package:flashcard_desktop_app/src/providers/app_service_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firedart/firedart.dart';
@@ -32,7 +35,7 @@ class StudyView extends ConsumerStatefulWidget {
 }
 
 class _StudyViewState extends ConsumerState<StudyView> {
-  // TOOD: Test that session disposes between sessions
+  
   // TODO: Make functions highly generalized, possible create a hook/mixin
   AsyncValue<StudySession> get getStudySessionAsync {
     final selectedDeckIds = ref.watch(selectedDecksListNotifierProvider);
@@ -114,9 +117,11 @@ class _StudyViewState extends ConsumerState<StudyView> {
         getStudySessionNotifier.getRandomUnseenFlashcardId; // Handle exception
 
     final result = await Navigator.pushNamed<bool>(
-        context, RouteGenerator.flashcardRoute,
+        context, TopLevelRoutes.flashcardRoute,
         arguments: {'flashcardId': nextFlashcardId});
 
+    ref.read(themeNotifierProvider.notifier).setMainAppTheme();
+    
     await wm.setDefaultSizeAndPosition();
     await wm.blur();
 

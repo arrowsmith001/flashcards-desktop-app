@@ -12,7 +12,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../views/login_view.dart';
 
-class RouteGenerator {
+class TopLevelRoutes {
   static const String entryRoute = '/';
   static const String mainRoute = '/main';
   static const String studyRoute = '/study';
@@ -36,6 +36,7 @@ class RouteGenerator {
             },
             transitionsBuilder: (_, Animation<double> animation,
                 Animation<double> second, Widget child) {
+                  
               CurvedAnimation curvedIn =
                   CurvedAnimation(parent: animation, curve: Curves.decelerate);
               CurvedAnimation curvedOut =

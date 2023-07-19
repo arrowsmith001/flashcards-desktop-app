@@ -8,7 +8,7 @@ abstract class Entity {
 
   Entity clone();
 
-  // TODO: To avoid repetition, consider a DTO for immutable fields
+  // TODO: To avoid repetition, consider a DTO for immutable fields (or freezed)
   Entity cloneWithId(String newId);
 
 
